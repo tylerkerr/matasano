@@ -37,44 +37,96 @@ def fixedxor(hexin1, hexin2):
     try:
         assert len(padhex(hexin1)) == len(padhex(hexin2))
     except:
-        return("strings must be equal length")
+        return("strings must be equal length hex")
         sys.exit(1)
     plaintext = int(hexin1, 16)
     key = int(hexin2, 16)
     ciphertext = format((plaintext ^ key), 'x')
     return(ciphertext)
 
+def englishngrams(teststring):
+    score = 0
+    testgrams = [] # we'll score based on how well-represented english patterns are - grams,
+    testbigrams = [] # bigrams (pairs of letters),
+    testtrigrams = [] # and trigrams (trios of letters)
+    for c in range(len(teststring)): # populate local variables containing lists of each size of n-gram
+        testgrams.append(teststring[c])
+        testbigrams.append(teststring[c:c+2].lower()) # this does not strip whitespace or extended ascii or unprintable ascii, so only actually adjacent n-grams will match
+        testtrigrams.append(teststring[c:c+3].lower()) # we're going lowercase because i couldn't find case-sensitive bi- and trigrams
+    for checkgram in testgrams:
+        if checkgram in unigrams:
+            score += unigrams[checkgram]
+        else:
+            score -= 50 # this can be tuned, but 50 seems good
+    for checkbigram in testbigrams:
+        if checkbigram in bigrams:
+            score += bigrams[checkbigram] * 26 # naive? P of C is 1/26, P of C{2} is 1/26*26
+    for checktrigram in testtrigrams:
+        if checktrigram in trigrams:
+            score += trigrams[checktrigram] * 676 # see above, might be naive, though it seems to work well
+    return(score)
 
-grams = {
-'a': 8.167, 
-'b': 1.492, 
-'c': 2.782, 
-'d': 4.253, 
-'e': 12.702, 
-'f': 2.228, 
-'g': 2.015, 
-'h': 6.094, 
-'i': 6.966, 
-'j': 0.153, 
-'k': 0.772, 
-'l': 4.025, 
-'m': 2.406, 
-'n': 6.749, 
-'o': 7.507, 
-'p': 1.929, 
-'q': 0.095, 
-'r': 5.987, 
-'s': 6.327, 
-'t': 9.056, 
-'u': 2.758, 
-'v': 0.978, 
-'w': 2.360, 
-'x': 0.150, 
-'y': 1.974, 
-'z': 0.074
+
+unigrams = { # data from "Case-sensitive letter and bigram frequency counts from large-scale English corpora", Jones, Michael N; D J K Mewhort (August 2004)
+'a': 8.07272314,
+'b': 1.32836838,
+'c': 3.00655922,
+'d': 3.63444224,
+'e': 11.87317078,
+'f': 1.98901140,
+'g': 1.85071114,
+'h': 4.53321146,
+'i': 6.94328120,
+'j': 0.10099916,
+'k': 0.70668125,
+'l': 3.91560687,
+'m': 2.25042126,
+'n': 6.95587696,
+'o': 7.25297454,
+'p': 1.92560167,
+'q': 0.08315530,
+'r': 6.34610926,
+'s': 6.42012408,
+'t': 8.44679699,
+'u': 2.47425090,
+'v': 1.00203202,
+'w': 1.55764702,
+'x': 0.18952219,
+'y': 1.62878321,
+'z': 0.10186873,
+'A': 3.98197476,
+'B': 0.12995575,
+'C': 0.17587972,
+'D': 0.09940418,
+'E': 0.10616061,
+'F': 0.07725770,
+'G': 0.07147666,
+'H': 0.09480327,
+'I': 0.17123971,
+'J': 0.06035319,
+'K': 0.03571839,
+'L': 0.08203728,
+'M': 0.19896939,
+'N': 0.15751136,
+'O': 0.08105268,
+'P': 0.11060509,
+'Q': 0.00894033,
+'R': 0.11229899,
+'S': 0.23385732,
+'T': 0.24957019,
+'U': 0.04408285,
+'V': 0.02381201,
+'W': 0.08219908,
+'X': 0.00581095,
+'Y': 0.07230866,
+'Z': 0.00430185,
+' ': 0.0,
+'.': 0.0,
+'!': 0.0,
+'\'': 0.0
 }
 
-bigrams = {
+bigrams = { # data from http://practicalcryptography.com/cryptanalysis/letter-frequencies-various-languages/english-letter-frequencies/
 'th' :  2.71,
 'en' :  1.13,
 'ng' :  0.89,
@@ -107,7 +159,7 @@ bigrams = {
 'of' :  0.71
 }
 
-trigrams = {
+trigrams = { # data from http://practicalcryptography.com/cryptanalysis/letter-frequencies-various-languages/english-letter-frequencies/
 'the' :  1.81,
 'ere' :  0.31,
 'hes' :  0.24,
@@ -140,7 +192,7 @@ trigrams = {
 'ont' :  0.20
 }
 
-if __name__ == "__main__":
+if __name__ == "__main__": # turn this mess into argparse sometime
     try:
         if sys.argv[1] == "ph":
             try:
@@ -161,7 +213,7 @@ if __name__ == "__main__":
             try:
                 print(hex2b64(sys.argv[2]))
             except:
-                print("usage: tkutils.py h2b [hex to be b64d]")
+                print("usage: tkutils.py h2b [hex to be b64ed]")
         elif sys.argv[1] == "b2h":
             try:
                 print(b642hex(sys.argv[2]))
@@ -172,6 +224,11 @@ if __name__ == "__main__":
                 print(fixedxor(sys.argv[2], sys.argv[3]))
             except:
                 print("usage: tkutils.py xor [string1] [string2]")
+        elif sys.argv[1] == "english":
+            try:
+                print(englishngrams(sys.argv[2]))
+            except:
+                print("usage: tkutils.py unigram [test string]")
         else:
             print("usage: tkutils.py [ph h2a h2b a2h xor] [data]")
     except:
