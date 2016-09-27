@@ -2,38 +2,38 @@
 
 import sys, binascii
 
-def padhex(hexin):
+def padhex(hexin): # left-pad odd-length hex string
     if len(hexin) % 2 == 1:
         hexout = "0" + hexin
         return(hexout)
     else:
         return(hexin)
     
-def hex2ascii(hexin):
+def hex2ascii(hexin): # convert hex string to ascii
     asciiout = bytes.fromhex(padhex(hexin)).decode('utf-8')
     return(asciiout)
 
-def ascii2hex(asciiin):
+def ascii2hex(asciiin): # convert ascii to hex string
     hexbytes = []
     for c in asciiin:
         hexbytes.append(format(ord(c), 'x'))
     hexout = "".join(hexbytes)
     return(hexout)
     
-def hex2b64(hexin):
+def hex2b64(hexin): # convert hex string to base64
     hexbytes = binascii.unhexlify(padhex(hexin))
     b64bytes = binascii.b2a_base64(hexbytes)
     b64out = b64bytes.decode('utf-8').rstrip('\n')
     return(b64out)
 
-def b642hex(b64in):
+def b642hex(b64in): # convert base64 to hex string
     b64bytes = b64in.encode('utf-8')
     rawbytes = binascii.a2b_base64(b64bytes)
     hexbytes = binascii.hexlify(rawbytes)
     hexout = hexbytes.decode('utf-8')
     return(hexout)
 
-def fixedxor(hexin1, hexin2):
+def fixedxor(hexin1, hexin2): # xor two equal-length hex strings
     try:
         assert len(padhex(hexin1)) == len(padhex(hexin2))
     except:
@@ -46,25 +46,25 @@ def fixedxor(hexin1, hexin2):
 
 def englishngrams(teststring):
     score = 0
-    testgrams = [] # we'll score based on how well-represented english patterns are - grams,
+    testgrams = [] # we'll score based on how well-represented common english patterns are - unigrams,
     testbigrams = [] # bigrams (pairs of letters),
     testtrigrams = [] # and trigrams (trios of letters)
-    for c in range(len(teststring)): # populate local variables containing lists of each size of n-gram
+    for c in range(len(teststring)): # chop the test string up into lists of each size of n-gram
         testgrams.append(teststring[c])
-        testbigrams.append(teststring[c:c+2].lower()) # this does not strip whitespace or extended ascii or unprintable ascii, so only actually adjacent n-grams will match
-        testtrigrams.append(teststring[c:c+3].lower()) # we're going lowercase because i couldn't find case-sensitive bi- and trigrams
+        testbigrams.append(teststring[c:c+2]) # this does not strip whitespace or extended ascii or unprintable ascii
+        testtrigrams.append(teststring[c:c+3]) # only actually adjacent lowercase n-grams will match
     for checkgram in testgrams:
         if checkgram in unigrams:
             score += unigrams[checkgram]
         else:
-            score -= 50 # this can be tuned, but 50 seems good
+            score -= 50 # if it's not in the dicts below, harshly penalize the score. this can be tuned, but 50 seems good
     for checkbigram in testbigrams:
         if checkbigram in bigrams:
-            score += bigrams[checkbigram] * 26 # naive? P of C is 1/26, P of C{2} is 1/26*26
+            score += bigrams[checkbigram] * 26 # naive? P of [a-z] is 1/26, P of [a-z]{2} is 1/26*26
     for checktrigram in testtrigrams:
         if checktrigram in trigrams:
             score += trigrams[checktrigram] * 676 # see above, might be naive, though it seems to work well
-    return(score)
+    return(round(score, 2))
 
 
 unigrams = { # data from "Case-sensitive letter and bigram frequency counts from large-scale English corpora", Jones, Michael N; D J K Mewhort (August 2004)
@@ -120,10 +120,12 @@ unigrams = { # data from "Case-sensitive letter and bigram frequency counts from
 'X': 0.00581095,
 'Y': 0.07230866,
 'Z': 0.00430185,
-' ': 0.0,
+' ': 0.0, # 0 score for common punctuation to avoid the penalty for unprintable ascii
 '.': 0.0,
 '!': 0.0,
-'\'': 0.0
+'\'': 0.0,
+'"': 0.0,
+',': 0.0
 }
 
 bigrams = { # data from http://practicalcryptography.com/cryptanalysis/letter-frequencies-various-languages/english-letter-frequencies/
