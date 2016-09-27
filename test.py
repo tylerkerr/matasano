@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
-import tkutils, sys
+import binascii
 
-print(tkutils.hex2ascii(sys.argv[1]))
+s = "vu8d6g=="
+
+# print(binascii.b2a_base64(binascii.unhexlify(s)))
+
+print(binascii.hexlify(binascii.a2b_base64(s.encode('utf-8'))).decode('utf-8'))
