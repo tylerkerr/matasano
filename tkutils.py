@@ -14,9 +14,7 @@ def hex2ascii(hexin): # convert hex string to ascii
     return(asciiout)
 
 def ascii2hex(asciiin): # convert ascii to hex string
-    hexbytes = []
-    for c in asciiin:
-        hexbytes.append(format(ord(c), 'x'))
+    hexbytes = [format(ord(c), 'x') for c in asciiin]
     hexout = "".join(hexbytes)
     return(hexout)
     
@@ -68,9 +66,7 @@ def englishngrams(teststring):
     
 def englishunigrams(teststring):
     score = 0
-    testgrams = [] # we'll score based on english letter frequency distribution
-    for c in range(len(teststring)): # chop the test string up into lists of each size of n-gram
-        testgrams.append(teststring[c])
+    testgrams = [c for c in teststring]
     for checkgram in testgrams:
         if checkgram in unigrams:
             score += unigrams[checkgram]
@@ -78,19 +74,31 @@ def englishunigrams(teststring):
             score -= 50 # if it's not in the dicts below, harshly penalize the score. this can be tuned, but 50 seems good
     return(round(score, 2))
     
-def hamming(string1, string2):
-    s1bytes = []
-    s2bytes = []
+def hamstring(string1, string2):
     distance = 0
     assert len(string1) == len(string2)
-    for i in range(len(string1)):
-        s1bytes.append(format(ord(string1[i]), '08b'))
-        s2bytes.append(format(ord(string2[i]), '08b'))
+    s1bytes = [format(ord(c), '08b') for c in string1]
+    s2bytes = [format(ord(c), '08b') for c in string2]
     for i in range(len(string1)):
         # print("byte %s: str1 %s str2 %s" % (i, s1bytes[i], s2bytes[i]))
         for bit in range(8):
             # print("bit %s: str1 %s str2 %s" % (bit, s1bytes[i][bit], s2bytes[i][bit]))
             if s1bytes[i][bit] != s2bytes[i][bit]:
+                distance += 1
+    return(distance)
+
+def hambytes(string1, string2):
+    distance = 0
+    assert type(string1) == list
+    assert len(string1) == len(string2)
+    s1bytes = [format(byte, '08b') for byte in string1]
+    s2bytes = [format(byte, '08b') for byte in string2]
+    for i in range(len(string1)):
+        # print("byte %s: str1 %s str2 %s" % (i, s1bytes[i], s2bytes[i]))
+        for bit in range(8):
+            # print("bit %s: str1 %s str2 %s" % (bit, s1bytes[i][bit], s2bytes[i][bit]))
+            if s1bytes[i][bit] != s2bytes[i][bit]:
+                # print("+1")
                 distance += 1
     return(distance)
     
@@ -229,53 +237,67 @@ trigrams = { # data from http://practicalcryptography.com/cryptanalysis/letter-f
 }
 
 if __name__ == "__main__": # turn this mess into argparse sometime
-    try:
-        if sys.argv[1] == "ph":
-            try:
-                print(padhex(sys.argv[2]))
-            except:
-                print("usage: tkutils.py ph [hex to leftpad]")
-        elif sys.argv[1] == "h2a":
-            try:
-                print(hex2ascii(sys.argv[2]))
-            except:
-                print("usage: tkutils.py h2a [hex to be asciid]")
-        elif sys.argv[1] == "a2h":
-            try:
-                print(ascii2hex(sys.argv[2]))
-            except:
-                print("usage: tkutils.py a2h [ascii to be hexed]")
-        elif sys.argv[1] == "h2b":
-            try:
-                print(hex2b64(sys.argv[2]))
-            except:
-                print("usage: tkutils.py h2b [hex to be b64ed]")
-        elif sys.argv[1] == "b2h":
-            try:
-                print(b642hex(sys.argv[2]))
-            except:
-                print("usage: tkutils.py b2h [b64 to be hexed]")
-        elif sys.argv[1] == "xor":
-            try:
-                print(fixedxor(sys.argv[2], sys.argv[3]))
-            except:
-                print("usage: tkutils.py xor [string1] [string2]")
-        elif sys.argv[1] == "english":
-            try:
-                print(englishngrams(sys.argv[2]))
-            except:
-                print("usage: tkutils.py englishngrams [test string]")
-        elif sys.argv[1] == "hamming":
-            try:
-                print(hamming(sys.argv[2], sys.argv[3]))
-            except:
-                print("usage: tkutils.py hamming [string1] [string2]")
-        elif sys.argv[1] == "splithex":
-            try:
-                print(splithex(sys.argv[2]))
-            except:
-                print("usage: tkutils.py splithex [hex to split]")
-        else:
-            print("usage: tkutils.py [ph h2a h2b a2h xor] [data]")
-    except:
+    if sys.argv[1] == "ph":
+    	print(padhex(sys.argv[2]))
+        # try:
+            
+        # except:
+        #     print("usage: tkutils.py ph [hex to leftpad]")
+    elif sys.argv[1] == "h2a":
+        print(hex2ascii(sys.argv[2]))
+        # try:
+
+        # except:
+        #     print("usage: tkutils.py h2a [hex to be asciid]")
+    elif sys.argv[1] == "a2h":
+    	print(ascii2hex(sys.argv[2]))
+        # try:
+            
+        # except:
+        #     print("usage: tkutils.py a2h [ascii to be hexed]")
+    elif sys.argv[1] == "h2b":
+    	print(hex2b64(sys.argv[2]))
+        # try:
+            
+        # except:
+        #     print("usage: tkutils.py h2b [hex to be b64ed]")
+    elif sys.argv[1] == "b2h":
+    	print(b642hex(sys.argv[2]))
+        # try:
+            
+        # except:
+        #     print("usage: tkutils.py b2h [b64 to be hexed]")
+    elif sys.argv[1] == "xor":
+    	print(fixedxor(sys.argv[2], sys.argv[3]))
+        # try:
+            
+        # except:
+        #     print("usage: tkutils.py xor [string1] [string2]")
+    elif sys.argv[1] == "ngrams":
+    	print(englishngrams(sys.argv[2]))
+        # try:
+            
+        # except:
+        #     print("usage: tkutils.py englishngrams [test string]")
+    elif sys.argv[1] == "unigrams":
+    	print(englishunigrams(sys.argv[2]))
+        # try:
+            
+        # except:
+        #     print("usage: tkutils.py englishngrams [test string]")
+    elif sys.argv[1] == "hamstring":
+    	print(hamstring(sys.argv[2], sys.argv[3]))
+        # try:
+            
+        # except:
+        #     print("usage: tkutils.py hamming [string1] [string2]")
+    elif sys.argv[1] == "hambytes":
+        print(hambytes(sys.argv[2], sys.argv[3]))
+    elif sys.argv[1] == "splithex":
+    	print(splithex(sys.argv[2]))
+        # try:
+            
+        # except:
+        #     print("usage: tkutils.py splithex [hex to split]")
+    else:
         print("usage: tkutils.py [ph h2a h2b a2h xor] [data]")

@@ -5,14 +5,11 @@ import sys, tkutils
 filename = sys.argv[1]
 key = sys.argv[2]
 keylen = len(key)
-keybytes = []
 ctbytes = []
 ptbytes = []
-plaintext = []
 keycounter = 0
 
-for c in key:
-    keybytes.append(ord(c))
+keybytes = [ord(c) for c in key]
 
 with open(filename) as f:
     lines = f.read()
@@ -25,7 +22,6 @@ for byte in ctbytes:
     ptbytes.append(byte ^ keybytes[keycounter])
     keycounter = (keycounter + 1) % keylen
 
-for byte in ptbytes:
-    plaintext.append(tkutils.padhex(format(byte, 'x')))
+plaintext = [tkutils.padhex(format(byte, 'x')) for byte in ptbytes]
 
 print(tkutils.padhex("".join(plaintext)))
