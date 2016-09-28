@@ -65,7 +65,41 @@ def englishngrams(teststring):
         if checktrigram in trigrams:
             score += trigrams[checktrigram] * 676 # see above, might be naive, though it seems to work well
     return(round(score, 2))
-
+    
+def englishunigrams(teststring):
+    score = 0
+    testgrams = [] # we'll score based on english letter frequency distribution
+    for c in range(len(teststring)): # chop the test string up into lists of each size of n-gram
+        testgrams.append(teststring[c])
+    for checkgram in testgrams:
+        if checkgram in unigrams:
+            score += unigrams[checkgram]
+        else:
+            score -= 50 # if it's not in the dicts below, harshly penalize the score. this can be tuned, but 50 seems good
+    return(round(score, 2))
+    
+def hamming(string1, string2):
+    s1bytes = []
+    s2bytes = []
+    distance = 0
+    assert len(string1) == len(string2)
+    for i in range(len(string1)):
+        s1bytes.append(format(ord(string1[i]), '08b'))
+        s2bytes.append(format(ord(string2[i]), '08b'))
+    for i in range(len(string1)):
+        # print("byte %s: str1 %s str2 %s" % (i, s1bytes[i], s2bytes[i]))
+        for bit in range(8):
+            # print("bit %s: str1 %s str2 %s" % (bit, s1bytes[i][bit], s2bytes[i][bit]))
+            if s1bytes[i][bit] != s2bytes[i][bit]:
+                distance += 1
+    return(distance)
+    
+def splithex(hexin):
+    hexout = []
+    for pos in range(int(len(hexin) / 2)): # slice up the input hex string into hex bytes
+    	bytepos = (pos+1)*2-2 # gets 0, 2, 4, 6 etc.
+    	hexout.append(int(hexin[bytepos:bytepos+2], 16))
+    return(hexout)
 
 unigrams = { # data from "Case-sensitive letter and bigram frequency counts from large-scale English corpora", Jones, Michael N; D J K Mewhort (August 2004)
 'a': 8.07272314,
@@ -230,7 +264,17 @@ if __name__ == "__main__": # turn this mess into argparse sometime
             try:
                 print(englishngrams(sys.argv[2]))
             except:
-                print("usage: tkutils.py unigram [test string]")
+                print("usage: tkutils.py englishngrams [test string]")
+        elif sys.argv[1] == "hamming":
+            try:
+                print(hamming(sys.argv[2], sys.argv[3]))
+            except:
+                print("usage: tkutils.py hamming [string1] [string2]")
+        elif sys.argv[1] == "splithex":
+            try:
+                print(splithex(sys.argv[2]))
+            except:
+                print("usage: tkutils.py splithex [hex to split]")
         else:
             print("usage: tkutils.py [ph h2a h2b a2h xor] [data]")
     except:
