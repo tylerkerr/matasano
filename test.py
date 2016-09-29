@@ -1,9 +1,20 @@
 #!/usr/bin/env python3
 
-import binascii
+import sys
 
-s = "vu8d6g=="
+def testo(mandatory, optional="howdy"):
+	out1 = "mandatory is set to %s" % mandatory
+	out2 = "optional is set to %s" % optional
+	return(out1, out2)
 
-# print(binascii.b2a_base64(binascii.unhexlify(s)))
+try:
+	mandatory = sys.argv[1]
+except:
+	pass
 
-print(binascii.hexlify(binascii.a2b_base64(s.encode('utf-8'))).decode('utf-8'))
+try:
+	optional = sys.argv[2]
+except:
+	pass
+
+print(testo(mandatory, optional="zxcv"))

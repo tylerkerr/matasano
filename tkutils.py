@@ -42,7 +42,7 @@ def fixedxor(hexin1, hexin2): # xor two equal-length hex strings
     ciphertext = format((plaintext ^ key), 'x')
     return(ciphertext)
 
-def englishngrams(teststring):
+def englishngrams(teststring, penalty=-50):
     score = 0
     testgrams = [] # we'll score based on how well-represented common english patterns are - unigrams,
     testbigrams = [] # bigrams (pairs of letters),
@@ -55,7 +55,7 @@ def englishngrams(teststring):
         if checkgram in unigrams:
             score += unigrams[checkgram]
         else:
-            score -= 50 # if it's not in the dicts below, harshly penalize the score. this can be tuned, but 50 seems good
+            score += penalty # if it's not in the dicts below, harshly penalize the score. 50 seems good
     for checkbigram in testbigrams:
         if checkbigram in bigrams:
             score += bigrams[checkbigram] * 26 # naive? P of [a-z] is 1/26, P of [a-z]{2} is 1/26*26
@@ -64,14 +64,14 @@ def englishngrams(teststring):
             score += trigrams[checktrigram] * 676 # see above, might be naive, though it seems to work well
     return(round(score, 2))
     
-def englishunigrams(teststring):
+def englishunigrams(teststring, penalty=-50):
     score = 0
     testgrams = [c for c in teststring]
     for checkgram in testgrams:
         if checkgram in unigrams:
             score += unigrams[checkgram]
         else:
-            score -= 50 # if it's not in the dicts below, harshly penalize the score. this can be tuned, but 50 seems good
+            score += penalty # if it's not in the dicts below, harshly penalize the score. this can be tuned, but 50 seems good
     return(round(score, 2))
     
 def hamstring(string1, string2):
