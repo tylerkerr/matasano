@@ -5,8 +5,8 @@ import sys, tkutils
 ### vvv TUNING vvv ###
 
 blockstohamming = 10     # how many ciphertext blocks do we check the hamming distance on to attempt determining keysize?
-maxkeysize = 40         # what is the largest keysize we bother checking the above on?
-keysizestotry = 4       # the X highest-scoring keysizes that we'll bruteforce and score
+maxkeysize = 50         # what is the largest keysize we bother checking the above on?
+keysizestotry = 10      # the X highest-scoring keysizes that we'll bruteforce and score
 unigrampenalty = -5     # during keysize trial scoring, how much do extended ascii chars ([^a-zA-Z !.,'"]) subtract?
 ngrampenalty = -1       # same Q as above but during final (full plaintext) scoring
 
@@ -14,16 +14,7 @@ ngrampenalty = -1       # same Q as above but during final (full plaintext) scor
 
 ### vvv initialization vvv ###
 
-filename = sys.argv[1]
-with open(filename) as f:
-    ciphertext = "".join(f.read().splitlines())
-
-try: 
-    cipherhex = tkutils.b642hex(ciphertext) # get a hex string from the base64 input
-except:
-    print("input must be base64-encoded vigenere-encrypted binary ciphertext")
-
-ctbytes = tkutils.splithex(cipherhex) # chop the hex string into bytes
+ctbytes = tkutils.ingestb64(sys.argv[1])
 
 ### ^^^ initialization ^^^ ###
 
@@ -37,7 +28,7 @@ for checksize in range(2,maxkeysize+1): # check each potential key length for th
         blockbytes.append(ctbytes[checksize*i:checksize*(i+1)]) # e.g. if keysize is 3, make blocks of 3 bytes each, etc
     for i in range(1, blockstohamming):
         distance += tkutils.hambytes(blockbytes[0], blockbytes[i]) # we only check block 0 against the specified number of other blocks - no permutations
-    distance = distance / blockstohamming / checksize # average and normalize the reported hamming distance against the number of blocks checked and keysize being tested
+    distance = distance / blockstohamming / checksize + (checksize / 100) # average and normalize the reported hamming distance against the number of blocks checked and keysize being tested
     keysizeresults.append((checksize, distance))
 
 keysizes = [keyscore[0] for keyscore in sorted(keysizeresults, key=lambda x: x[1])][0:keysizestotry] # just get the X best sizes as defined by tuning variables
@@ -84,7 +75,7 @@ for keysize in keysizes: # for every keysize, try every single key for each posi
 
     result = "".join([chr(byte) for byte in ptbytes]) # convert the decrypted bytes into ascii
     ptkey = "".join([chr(byte) for byte in key]) # convert the key into ascii
-    results.append((keysize, ptkey, tkutils.englishngrams(result, penalty=ngrampenalty), result))
+    results.append((keysize, ptkey, tkutils.englishngrams(result, penalty=ngrampenalty)-keysize*10, result))
 
 ### ^^^ cracking ^^^ ###
 

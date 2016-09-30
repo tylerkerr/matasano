@@ -8,6 +8,17 @@ def padhex(hexin): # left-pad odd-length hex string
         return(hexout)
     else:
         return(hexin)
+
+def ingestb64(filename): # take a base64-encoded file and return bytes
+    with open(filename) as f:
+        ciphertext = "".join(f.read().splitlines())
+    try: 
+        cipherhex = b642hex(ciphertext) # get a hex string from the base64 input
+    except:
+        print("input must be base64-encoded vigenere-encrypted binary ciphertext")
+        return(False)
+    ctbytes = splithex(cipherhex) # chop the hex string into bytes
+    return(ctbytes)
     
 def hex2ascii(hexin): # convert hex string to ascii
     asciiout = bytes.fromhex(padhex(hexin)).decode('utf-8')
