@@ -14,7 +14,7 @@ ngrampenalty = -1       # same Q as above but during final (full plaintext) scor
 
 ### vvv initialization vvv ###
 
-ctbytes = tkutils.ingestb64(sys.argv[1])
+ctbytes = tkutils.ingestb64asbytelist(sys.argv[1])
 
 ### ^^^ initialization ^^^ ###
 
