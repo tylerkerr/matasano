@@ -6,8 +6,8 @@ import sys, tkutils
 
 blockstohamming = 10     # how many ciphertext blocks do we check the hamming distance on to attempt determining keysize?
 maxkeysize = 40         # what is the largest keysize we bother checking the above on?
-keysizestotry = 3       # the X highest-scoring keysizes that we'll bruteforce and score
-unigrampenalty = -1     # during keysize trial scoring, how much do extended ascii chars ([^a-zA-Z !.,'"]) subtract?
+keysizestotry = 4       # the X highest-scoring keysizes that we'll bruteforce and score
+unigrampenalty = -5     # during keysize trial scoring, how much do extended ascii chars ([^a-zA-Z !.,'"]) subtract?
 ngrampenalty = -1       # same Q as above but during final (full plaintext) scoring
 
 ### ^^^ TUNING ^^^ ###
