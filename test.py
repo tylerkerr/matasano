@@ -2,19 +2,8 @@
 
 import sys
 
-def testo(mandatory, optional="howdy"):
-	out1 = "mandatory is set to %s" % mandatory
-	out2 = "optional is set to %s" % optional
-	return(out1, out2)
+outer = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
 
-try:
-	mandatory = sys.argv[1]
-except:
-	pass
+inner = [[b for b in i] for i in outer]
 
-try:
-	optional = sys.argv[2]
-except:
-	pass
-
-print(testo(mandatory, optional="zxcv"))
+print(inner)

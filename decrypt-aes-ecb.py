@@ -1,21 +1,17 @@
 #!/usr/bin/env python3
 
-import sys, os, tkutils
+import sys, tkutils
+
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
+
 backend = default_backend()
 filename = sys.argv[1]
 ciphertext = tkutils.ingestb64asbinary(filename)
+key = b"YELLOW SUBMARINE"
 
-print(type(ciphertext))
-
-iv = os.urandom(16)
-key = "YELLOW SUBMARINE"
-ecbcipher = Cipher(
-	algorithms.AES(key), 
-	modes.CBC(iv), 
-	backend=backend
-	)
+ecbcipher = Cipher(algorithms.AES(key), modes.ECB(), backend=backend)
 ecbdecrypt = ecbcipher.decryptor()
+message = ecbdecrypt.update(ciphertext) + ecbdecrypt.finalize()
 
-# print(ecbdecrypt(ciphertext))
+print(message.decode('utf-8'))
