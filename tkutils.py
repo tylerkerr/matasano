@@ -66,7 +66,7 @@ def fixedxor(hexin1, hexin2): # xor two equal-length hex strings
     ciphertext = format((plaintext ^ key), 'x')
     return(ciphertext)
 
-def englishngrams(teststring, penalty=-50):
+def englishngrams(teststring, penalty=-50): # score for frequency analysis of n-grams
     score = 0
     testgrams = [] # we'll score based on how well-represented common english patterns are - unigrams,
     testbigrams = [] # bigrams (pairs of letters),
@@ -88,7 +88,7 @@ def englishngrams(teststring, penalty=-50):
             score += trigrams[checktrigram] * 676 # see above, might be naive, though it seems to work well
     return(round(score, 2))
     
-def englishunigrams(teststring, penalty=-50):
+def englishunigrams(teststring, penalty=-50): # score for frequency analysis of single letters
     score = 0
     testgrams = [c for c in teststring]
     for checkgram in testgrams:
@@ -98,7 +98,7 @@ def englishunigrams(teststring, penalty=-50):
             score += penalty # if it's not in the dicts below, harshly penalize the score. this can be tuned, but 50 seems good
     return(round(score, 2))
     
-def hamstring(string1, string2):
+def hamstring(string1, string2): # hamming distance of two equal-length strings
     distance = 0
     assert len(string1) == len(string2)
     s1bytes = [format(ord(c), '08b') for c in string1]
@@ -111,7 +111,7 @@ def hamstring(string1, string2):
                 distance += 1
     return(distance)
 
-def hambytes(string1, string2):
+def hambytes(string1, string2): # hamming distance of two lists of bytes (ints)
     distance = 0
     assert type(string1) == list
     assert len(string1) == len(string2)
@@ -126,15 +126,15 @@ def hambytes(string1, string2):
                 distance += 1
     return(distance)
     
-def splithex(hexin):
-    hexout = []
+def splithex(hexin): # turn a hex string into a list of bytes (ints)
+    bytesout = []
     for pos in range(int(len(hexin) / 2)): # slice up the input hex string into hex bytes
     	bytepos = (pos+1)*2-2 # gets 0, 2, 4, 6 etc.
     	hexout.append(int(hexin[bytepos:bytepos+2], 16))
-    return(hexout)
+    return(bytesout)
     
     
-def decryptaesecb(ciphertext, key):
+def decryptaesecb(ciphertext, key): # decrypt a base64 file that's been encrypted with AES-12-ECB
     blocksize = 16
     keybytes = key.encode()
     backend = default_backend()
@@ -148,7 +148,7 @@ def decryptaesecb(ciphertext, key):
     plaintext = b''.join(ptblocks)
     return(plaintext)
 
-def encryptaesecb(plaintext, key):
+def encryptaesecb(plaintext, key): # encrypt a base64 file with AES-128-ECB
     blocksize = 16
     keybytes = key.encode()
     backend = default_backend()
@@ -164,7 +164,7 @@ def encryptaesecb(plaintext, key):
     ciphertext = binascii.b2a_base64(b''.join(ctblocks)).decode('utf-8')
     return(ciphertext)
 
-def padpkcs7(plaintext, length):
+def padpkcs7(plaintext, length): # apply PCKS#7 padding to a bytes object
     if len(plaintext) == length:
         return(plaintext)
     else:
@@ -175,7 +175,7 @@ def blocksplit(bytes, blocksize):
     blocks = [bytes[i:i+blocksize] for i in range(0, len(bytes), blocksize)]
     return(blocks)
 
-def decryptaescbc(ciphertext, key, iv):
+def decryptaescbc(ciphertext, key, iv): # decrypt a base64 file that's been encrypted with AES-128-CBC
     blocksize = 16
     keybytes = key.encode()
     ivbytes = iv.encode()
@@ -194,7 +194,7 @@ def decryptaescbc(ciphertext, key, iv):
 
     return("".join(pt))
 
-def encryptaescbc(plaintext, key, iv):
+def encryptaescbc(plaintext, key, iv): # encrypt a base64 file with AES-128-CBC
     blocksize = 16
     keybytes = key.encode()
     ivbytes = iv.encode()
