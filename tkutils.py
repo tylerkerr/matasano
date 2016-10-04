@@ -135,18 +135,34 @@ def splithex(hexin):
     
     
 def decryptaesecb(ciphertext, key):
+    blocksize = 16
+    keybytes = key.encode()
     backend = default_backend()
-    ecbcipher = Cipher(algorithms.AES(key), modes.ECB(), backend=backend)
-    ecbdecrypt = ecbcipher.decryptor()
-    plaintext = ecbdecrypt.update(ciphertext) + ecbdecrypt.finalize()
+
+    ctblocks = blocksplit(ciphertext, blocksize)
+    ptblocks = []
+    for block in ctblocks:
+        ecbcipher = Cipher(algorithms.AES(keybytes), modes.ECB(), backend=backend)
+        ecbdecrypt = ecbcipher.decryptor()
+        ptblocks.append(ecbdecrypt.update(ciphertext) + ecbdecrypt.finalize())
+    plaintext = b''.join(ptblocks)
     return(plaintext)
 
 def encryptaesecb(plaintext, key):
+    blocksize = 16
+    keybytes = key.encode()
     backend = default_backend()
-    ecbcipher = Cipher(algorithms.AES(key), modes.ECB(), backend=backend)
-    ecbencrypt = ecbcipher.encryptor()
-    ciphertext = ecbencrypt.update(plaintext) + ecbencrypt.finalize()
-    return(binascii.b2a_base64(ciphertext).decode('utf-8'))
+
+    ptblocks = blocksplit(plaintext, blocksize)
+    ctblocks = []
+    for block in ptblocks:
+        while len(block) != blocksize:
+            block += b'\x00'
+        ecbcipher = Cipher(algorithms.AES(keybytes), modes.ECB(), backend=backend)
+        ecbencrypt = ecbcipher.encryptor()
+        ctblocks.append(ecbencrypt.update(block) + ecbencrypt.finalize())
+    ciphertext = binascii.b2a_base64(b''.join(ctblocks)).decode('utf-8')
+    return(ciphertext)
 
 def padpkcs7(plaintext, length):
     if len(plaintext) == length:
@@ -160,11 +176,11 @@ def blocksplit(bytes, blocksize):
     return(blocks)
 
 def decryptaescbc(ciphertext, key, iv):
-    keybytes = bytes(key, 'utf-8')
-    ivbytes = bytes(iv, 'utf-8')
+    blocksize = 16
+    keybytes = key.encode()
+    ivbytes = iv.encode()
 
-    ctblocks = blocksplit(ciphertext, 16)
-
+    ctblocks = blocksplit(ciphertext, blocksize)
     ptblocks = [[] for block in ctblocks]
 
     for blockindex in range(len(ctblocks)):
@@ -174,31 +190,30 @@ def decryptaescbc(ciphertext, key, iv):
             xorblock = ctblocks[blockindex-1]
         decrypt = decryptaesecb(ctblocks[blockindex], keybytes)
         ptblocks[blockindex] = bytes(x ^ y for x, y in zip(decrypt, xorblock))
-
     pt = [block.decode('utf-8') for block in ptblocks]
 
     return("".join(pt))
 
 def encryptaescbc(plaintext, key, iv):
     blocksize = 16
-    keybytes = bytes(key, 'utf-8')
-    ivbytes = bytes(iv, 'utf-8')
+    keybytes = key.encode()
+    ivbytes = iv.encode()
 
-    ptblocks = blocksplit(plaintext, 16)
+    ptblocks = blocksplit(plaintext, blocksize)
 
-    ptblocks = [[] for block in ctblocks]
+    ctblocks = [[] for block in ptblocks]
 
-    for blockindex in range(len(ctblocks)):
+    for blockindex in range(len(ptblocks)):
         if blockindex == 0:
             xorblock = ivbytes
         else:
             xorblock = ctblocks[blockindex-1]
-        encrypt = encryptaesecb(ctblocks[blockindex], keybytes)
-        ctblocks[blockindex] = bytes(x ^ y for x, y in zip(encrypt, xorblock))
+        while len(ptblocks[blockindex]) != blocksize:
+            ptblocks[blockindex] += b'\x00'
+        ctblocks[blockindex] = encryptaesecb(bytes(x ^ y for x, y in zip(ptblocks[blockindex], xorblock)), keybytes)
 
-    ct = [block.decode('utf-8') for block in ptblocks]
-
-    return("".join(ct))
+    ciphertext = binascii.b2a_base64(b''.join(ctblocks)).decode('utf-8')
+    return(ciphertext)
 
 
 

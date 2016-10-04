@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
-import sys, tkutils, base64
+import sys
+import tkutils
 
 filename = sys.argv[1]
-ciphertext = tkutils.ingestb64asbinary(filename)
-key = sys.argv[2].encode()
+key = sys.argv[2]
 
-output = tkutils.encryptaesecb(ciphertext, key)
+plaintext = tkutils.ingestb64asbinary(filename)
 
-print(output)
+print(tkutils.encryptaesecb(plaintext, key))
