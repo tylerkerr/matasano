@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 import sys, binascii
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.backends import default_backend
 
 def padhex(hexin): # left-pad odd-length hex string
     if len(hexin) % 2 == 1:
@@ -129,6 +131,22 @@ def splithex(hexin):
     	bytepos = (pos+1)*2-2 # gets 0, 2, 4, 6 etc.
     	hexout.append(int(hexin[bytepos:bytepos+2], 16))
     return(hexout)
+    
+    
+def decryptaesecb(ciphertext, key):
+    backend = default_backend()
+    ecbcipher = Cipher(algorithms.AES(key), modes.ECB(), backend=backend)
+    ecbdecrypt = ecbcipher.decryptor()
+    message = ecbdecrypt.update(ciphertext) + ecbdecrypt.finalize()
+    return(message)
+
+def padpkcs7(plaintext, length):
+    if len(plaintext) == length:
+        return(plaintext)
+    else:
+        difference = length - len(plaintext)
+        return(plaintext + bytes([difference]) * difference)
+
 
 unigrams = { # data from "Case-sensitive letter and bigram frequency counts from large-scale English corpora", Jones, Michael N; D J K Mewhort (August 2004)
 'a': 8.07272314,
