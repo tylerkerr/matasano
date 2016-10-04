@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-import sys
+iv = "0000"
 
-outer = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+ivbytes = [chr(int(c)) for c in iv]
 
-inner = [[b for b in i] for i in outer]
+ivout = b''.join([bytes(byte, 'utf-8') for byte in ivbytes])
 
-print(inner)
+print(ivout)

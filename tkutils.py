@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-import sys, binascii
+import sys
+import binascii
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 
@@ -137,8 +138,15 @@ def decryptaesecb(ciphertext, key):
     backend = default_backend()
     ecbcipher = Cipher(algorithms.AES(key), modes.ECB(), backend=backend)
     ecbdecrypt = ecbcipher.decryptor()
-    message = ecbdecrypt.update(ciphertext) + ecbdecrypt.finalize()
-    return(message)
+    plaintext = ecbdecrypt.update(ciphertext) + ecbdecrypt.finalize()
+    return(plaintext)
+
+def encryptaesecb(plaintext, key):
+    backend = default_backend()
+    ecbcipher = Cipher(algorithms.AES(key), modes.ECB(), backend=backend)
+    ecbencrypt = ecbcipher.encryptor()
+    ciphertext = ecbencrypt.update(plaintext) + ecbencrypt.finalize()
+    return(binascii.b2a_base64(ciphertext).decode('utf-8'))
 
 def padpkcs7(plaintext, length):
     if len(plaintext) == length:
@@ -146,6 +154,52 @@ def padpkcs7(plaintext, length):
     else:
         difference = length - len(plaintext)
         return(plaintext + bytes([difference]) * difference)
+
+def blocksplit(bytes, blocksize):
+    blocks = [bytes[i:i+blocksize] for i in range(0, len(bytes), blocksize)]
+    return(blocks)
+
+def decryptaescbc(ciphertext, key, iv):
+    keybytes = bytes(key, 'utf-8')
+    ivbytes = bytes(iv, 'utf-8')
+
+    ctblocks = blocksplit(ciphertext, 16)
+
+    ptblocks = [[] for block in ctblocks]
+
+    for blockindex in range(len(ctblocks)):
+        if blockindex == 0:
+            xorblock = ivbytes
+        else:
+            xorblock = ctblocks[blockindex-1]
+        decrypt = decryptaesecb(ctblocks[blockindex], keybytes)
+        ptblocks[blockindex] = bytes(x ^ y for x, y in zip(decrypt, xorblock))
+
+    pt = [block.decode('utf-8') for block in ptblocks]
+
+    return("".join(pt))
+
+def encryptaescbc(plaintext, key, iv):
+    blocksize = 16
+    keybytes = bytes(key, 'utf-8')
+    ivbytes = bytes(iv, 'utf-8')
+
+    ptblocks = blocksplit(plaintext, 16)
+
+    ptblocks = [[] for block in ctblocks]
+
+    for blockindex in range(len(ctblocks)):
+        if blockindex == 0:
+            xorblock = ivbytes
+        else:
+            xorblock = ctblocks[blockindex-1]
+        encrypt = encryptaesecb(ctblocks[blockindex], keybytes)
+        ctblocks[blockindex] = bytes(x ^ y for x, y in zip(encrypt, xorblock))
+
+    ct = [block.decode('utf-8') for block in ptblocks]
+
+    return("".join(ct))
+
 
 
 unigrams = { # data from "Case-sensitive letter and bigram frequency counts from large-scale English corpora", Jones, Michael N; D J K Mewhort (August 2004)
