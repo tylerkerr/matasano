@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 
-iv = "0000"
+import sys
+import tkutils
+import hashlib
 
-ivbytes = [chr(int(c)) for c in iv]
+key = "YELLOW SUBMARINE"
+ptblocks = tkutils.blocksplit(tkutils.ingestb64asbinary(sys.argv[1]), 16)
+ctblocks = tkutils.blocksplit(tkutils.encryptaesecb(tkutils.ingestb64asbinary(sys.argv[1]), key), 16)
 
-ivout = b''.join([bytes(byte, 'utf-8') for byte in ivbytes])
+z = zip(ptblocks, ctblocks)
 
-print(ivout)
+[print(x, "\t", hashlib.sha256(y).hexdigest()) for x, y in list(z)]

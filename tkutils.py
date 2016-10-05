@@ -136,7 +136,10 @@ def splithex(hexin): # turn a hex string into a list of bytes (ints)
     
 def decryptaesecb(ciphertext, key): # decrypt a base64 file that's been encrypted with AES-12-ECB
     blocksize = 16
-    keybytes = key.encode()
+    if type(key) == bytes:
+        keybytes = key
+    else:
+        keybytes = key.encode()
     backend = default_backend()
 
     ctblocks = blocksplit(ciphertext, blocksize)
@@ -150,7 +153,10 @@ def decryptaesecb(ciphertext, key): # decrypt a base64 file that's been encrypte
 
 def encryptaesecb(plaintext, key): # encrypt a base64 file with AES-128-ECB
     blocksize = 16
-    keybytes = key.encode()
+    if type(key) == bytes:
+        keybytes = key
+    else:
+        keybytes = key.encode()
     backend = default_backend()
 
     ptblocks = blocksplit(plaintext, blocksize)
@@ -161,7 +167,7 @@ def encryptaesecb(plaintext, key): # encrypt a base64 file with AES-128-ECB
         ecbcipher = Cipher(algorithms.AES(keybytes), modes.ECB(), backend=backend)
         ecbencrypt = ecbcipher.encryptor()
         ctblocks.append(ecbencrypt.update(block) + ecbencrypt.finalize())
-    ciphertext = binascii.b2a_base64(b''.join(ctblocks)).decode('utf-8')
+    ciphertext = b''.join(ctblocks)
     return(ciphertext)
 
 def padpkcs7(plaintext, length): # apply PCKS#7 padding to a bytes object
@@ -177,8 +183,14 @@ def blocksplit(bytes, blocksize):
 
 def decryptaescbc(ciphertext, key, iv): # decrypt a base64 file that's been encrypted with AES-128-CBC
     blocksize = 16
-    keybytes = key.encode()
-    ivbytes = iv.encode()
+    if type(key) == bytes:
+        keybytes = key
+    else:
+        keybytes = key.encode()
+    if type(iv) == bytes:
+        ivbytes = iv
+    else:
+        ivbytes = iv.encode()
 
     ctblocks = blocksplit(ciphertext, blocksize)
     ptblocks = [[] for block in ctblocks]
@@ -196,8 +208,14 @@ def decryptaescbc(ciphertext, key, iv): # decrypt a base64 file that's been encr
 
 def encryptaescbc(plaintext, key, iv): # encrypt a base64 file with AES-128-CBC
     blocksize = 16
-    keybytes = key.encode()
-    ivbytes = iv.encode()
+    if type(key) == bytes:
+        keybytes = key
+    else:
+        keybytes = key.encode()
+    if type(iv) == bytes:
+        ivbytes = iv
+    else:
+        ivbytes = iv.encode()
 
     ptblocks = blocksplit(plaintext, blocksize)
 
