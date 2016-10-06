@@ -22,7 +22,7 @@ for line in lines:
 	scored = []
 	scoredsort = []
 	
-	for pos in range(int(len(tkutils.padhex(line)) / 2)): # slice up the input hex string into hex bytes
+	for pos in range(int(len(tkutils.padHex(line)) / 2)): # slice up the input hex string into hex bytes
 		bytepos = (pos+1)*2-2 # gets 0, 2, 4, 6 etc.
 		ctbytes.append(int(line[bytepos:bytepos+2], 16))
 
@@ -38,7 +38,7 @@ for line in lines:
 		solutions.append((format(checkkey, 'x'), "".join(checktext)))
 
 	for checksol in solutions: # loop through the output for every key and score it
-		scored.append((checksol[0], checksol[1], tkutils.englishngrams(checksol[1]))) # key, solution ascii, score
+		scored.append((checksol[0], checksol[1], tkutils.englishNGrams(checksol[1]))) # key, solution ascii, score
 
 
 	scoredsort = sorted(scored, key=lambda x: x[2], reverse=True)

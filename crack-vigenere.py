@@ -75,7 +75,7 @@ for keysize in keysizes: # for every keysize, try every single key for each posi
 
     result = "".join([chr(byte) for byte in ptbytes]) # convert the decrypted bytes into ascii
     ptkey = "".join([chr(byte) for byte in key]) # convert the key into ascii
-    results.append((keysize, ptkey, tkutils.englishngrams(result, penalty=ngrampenalty)-keysize*10, result))
+    results.append((keysize, ptkey, tkutils.englishNGrams(result, penalty=ngrampenalty)-keysize*10, result))
 
 ### ^^^ cracking ^^^ ###
 

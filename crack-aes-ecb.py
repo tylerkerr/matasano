@@ -15,15 +15,23 @@ def oracle(plaintext, key):
     ciphertext = binascii.b2a_base64(tkutils.encryptaesecb(fudgedpt, key)).decode('utf-8')
     return(ciphertext)
 
-plaintext = tkutils.ingestb64asbinary(filename)
+plaintext = tkutils.ingestB64asBinary(filename)
 
 ciphertext = (oracle(plaintext, key))
 
-blocksizerange = 32
 
-print(len(plaintext))
-for blocksize in range(blocksizerange):
-    print(blocksize)
-    for c in range(blocksize):
-        # print(chr(plaintext[c]))
-        pass
+def findBlockSize(plaintext, ciphertext):
+    blocksizerange = 16
+    for blocksize in range(1, blocksizerange+1):
+        trialencrypt = oracle(plaintext[0:blocksize], key)
+        if trialencrypt[0:blocksize] == ciphertext[0:blocksize]:
+            return(blocksize)
+            break
+
+blocksize = findBlockSize(plaintext, ciphertext)
+
+if tkutils.detectecb(ciphertext) == True:
+    pass
+else:
+    print("encrypted ciphertext is not ECB, or is ECB without repeated blocks. exiting")
+    sys.exit(1)

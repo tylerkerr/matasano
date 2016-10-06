@@ -17,6 +17,6 @@ for byte in ptbytes:
     ctbytes.append(byte ^ keybytes[keycounter])
     keycounter = (keycounter + 1) % keylen
 
-ciphertext = [tkutils.padhex(format(byte, 'x')) for byte in ctbytes]
+ciphertext = [tkutils.padHex(format(byte, 'x')) for byte in ctbytes]
 
-print(tkutils.padhex("".join(ciphertext)))
+print(tkutils.padHex("".join(ciphertext)))

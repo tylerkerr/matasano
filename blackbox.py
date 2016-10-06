@@ -8,6 +8,6 @@ import tkutils
 
 filename = sys.argv[1]
 
-ciphertext = tkutils.blackbox(tkutils.ingestb64asbinary(filename))
+ciphertext = tkutils.blackbox(tkutils.ingestB64asBinary(filename))
 
 tkutils.detectecb(ciphertext)

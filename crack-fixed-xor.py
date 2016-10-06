@@ -7,7 +7,7 @@ try:
 except:
 	print("usage: ./crackfixedxor.py [hex string encrypted via single-byte xor cipher]")
 
-ciphertext = tkutils.padhex(ciphertext) # left-pad with 0 in case of odd-length hex
+ciphertext = tkutils.padHex(ciphertext) # left-pad with 0 in case of odd-length hex
 
 ctbytes = [] # init
 trialkeys = []
@@ -34,7 +34,7 @@ for checkkey in trialkeys:
 	solutions.append((format(checkkey, 'x'), "".join(checktext)))
 
 for checksol in solutions: # loop through the output for every key and score it
-    scored.append((checksol[0], checksol[1], tkutils.englishngrams(checksol[1]))) # key, solution ascii, score
+    scored.append((checksol[0], checksol[1], tkutils.englishNGrams(checksol[1]))) # key, solution ascii, score
 
 
 scoredsort = sorted(scored, key=lambda x: x[2], reverse=True)

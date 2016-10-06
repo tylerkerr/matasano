@@ -7,25 +7,25 @@ import random
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 
-def padhex(hexin): # left-pad odd-length hex string
+def padHex(hexin): # left-pad odd-length hex string
     if len(hexin) % 2 == 1:
         hexout = "0" + hexin
         return(hexout)
     else:
         return(hexin)
 
-def ingestb64asbytelist(filename): # take a base64-encoded file and return list of bytes (as ints)
+def ingestB64asByteList(filename): # take a base64-encoded file and return list of bytes (as ints)
     with open(filename) as f:
         ciphertext = "".join(f.read().splitlines())
     try: 
-        cipherhex = b642hex(ciphertext) # get a hex string from the base64 input
+        cipherhex = b64ToHex(ciphertext) # get a hex string from the base64 input
     except:
         print("input must be base64-encoded vigenere-encrypted binary ciphertext")
         return(False)
     ctbytes = splithex(cipherhex) # chop the hex string into bytes
     return(ctbytes)
 
-def ingestb64asbinary(filename): # take a base64-encoded file and return binary
+def ingestB64asBinary(filename): # take a base64-encoded file and return binary
     with open(filename) as f:
         ciphertext = "".join(f.read().splitlines())
     try: 
@@ -35,31 +35,31 @@ def ingestb64asbinary(filename): # take a base64-encoded file and return binary
         return(False)
     return(ctbytes)
     
-def hex2ascii(hexin): # convert hex string to ascii
-    asciiout = bytes.fromhex(padhex(hexin)).decode('utf-8')
+def hexToAscii(hexin): # convert hex string to ascii
+    asciiout = bytes.fromhex(padHex(hexin)).decode('utf-8')
     return(asciiout)
 
-def ascii2hex(asciiin): # convert ascii to hex string
+def asciiToHex(asciiin): # convert ascii to hex string
     hexbytes = [format(ord(c), 'x') for c in asciiin]
     hexout = "".join(hexbytes)
     return(hexout)
     
-def hex2b64(hexin): # convert hex string to base64
-    hexbytes = binascii.unhexlify(padhex(hexin))
+def hexToB64(hexin): # convert hex string to base64
+    hexbytes = binascii.unhexlify(padHex(hexin))
     b64bytes = binascii.b2a_base64(hexbytes)
     b64out = b64bytes.decode('utf-8').rstrip('\n')
     return(b64out)
 
-def b642hex(b64in): # convert base64 to hex string
+def b64ToHex(b64in): # convert base64 to hex string
     b64bytes = b64in.encode('utf-8')
     rawbytes = binascii.a2b_base64(b64bytes)
     hexbytes = binascii.hexlify(rawbytes)
     hexout = hexbytes.decode('utf-8')
     return(hexout)
 
-def fixedxor(hexin1, hexin2): # xor two equal-length hex strings
+def fixedXOR (hexin1, hexin2): # xor two equal-length hex strings
     try:
-        assert len(padhex(hexin1)) == len(padhex(hexin2))
+        assert len(padHex(hexin1)) == len(padHex(hexin2))
     except:
         return("strings must be equal length hex")
         sys.exit(1)
@@ -68,7 +68,7 @@ def fixedxor(hexin1, hexin2): # xor two equal-length hex strings
     ciphertext = format((plaintext ^ key), 'x')
     return(ciphertext)
 
-def englishngrams(teststring, penalty=-50): # score for frequency analysis of n-grams
+def englishNGrams(teststring, penalty=-50): # score for frequency analysis of n-grams
     score = 0
     testgrams = [] # we'll score based on how well-represented common english patterns are - unigrams,
     testbigrams = [] # bigrams (pairs of letters),
@@ -90,7 +90,7 @@ def englishngrams(teststring, penalty=-50): # score for frequency analysis of n-
             score += trigrams[checktrigram] * 676 # see above, might be naive, though it seems to work well
     return(round(score, 2))
     
-def englishunigrams(teststring, penalty=-50): # score for frequency analysis of single letters
+def englishUnigrams(teststring, penalty=-50): # score for frequency analysis of single letters
     score = 0
     testgrams = [c for c in teststring]
     for checkgram in testgrams:
@@ -273,13 +273,15 @@ def detectecb(ciphertext): # takes base64
             ecbcts.append((offset, repetitions, ctblocks))
 
     if len(ecbcts) < 1:
-        print("no repeated blocks found with any offset. suspect CBC mode")
+        # print("no repeated blocks found with any offset. suspect CBC mode")
+        return False
     else:
         totalrepeats = 0
         sortedresults = sorted(ecbcts, key=lambda x: x[1], reverse=True) # i guess we don't really need to sort
         for result in sortedresults:
             totalrepeats += result[1]
-        print("found %s repeated blocks across all offsets. suspect ECB mode" % totalrepeats)
+        # print("found %s repeated blocks across all offsets. suspect ECB mode" % totalrepeats)
+        return True
 
 
 
@@ -446,53 +448,53 @@ trigrams = { # data from http://practicalcryptography.com/cryptanalysis/letter-f
 
 if __name__ == "__main__": # turn this mess into argparse sometime
     if sys.argv[1] == "ph":
-    	print(padhex(sys.argv[2]))
+    	print(padHex(sys.argv[2]))
         # try:
             
         # except:
         #     print("usage: tkutils.py ph [hex to leftpad]")
     elif sys.argv[1] == "h2a":
-        print(hex2ascii(sys.argv[2]))
+        print(hexToAscii(sys.argv[2]))
         # try:
 
         # except:
         #     print("usage: tkutils.py h2a [hex to be asciid]")
     elif sys.argv[1] == "a2h":
-    	print(ascii2hex(sys.argv[2]))
+    	print(asciiToHex(sys.argv[2]))
         # try:
             
         # except:
         #     print("usage: tkutils.py a2h [ascii to be hexed]")
     elif sys.argv[1] == "h2b":
-    	print(hex2b64(sys.argv[2]))
+    	print(hexToB64(sys.argv[2]))
         # try:
             
         # except:
         #     print("usage: tkutils.py h2b [hex to be b64ed]")
     elif sys.argv[1] == "b2h":
-    	print(b642hex(sys.argv[2]))
+    	print(b64ToHex(sys.argv[2]))
         # try:
             
         # except:
         #     print("usage: tkutils.py b2h [b64 to be hexed]")
     elif sys.argv[1] == "xor":
-    	print(fixedxor(sys.argv[2], sys.argv[3]))
+    	print(fixedXOR(sys.argv[2], sys.argv[3]))
         # try:
             
         # except:
         #     print("usage: tkutils.py xor [string1] [string2]")
     elif sys.argv[1] == "ngrams":
-    	print(englishngrams(sys.argv[2]))
+    	print(englishNGrams(sys.argv[2]))
         # try:
             
         # except:
-        #     print("usage: tkutils.py englishngrams [test string]")
+        #     print("usage: tkutils.py englishNGrams [test string]")
     elif sys.argv[1] == "unigrams":
     	print(englishunigrams(sys.argv[2]))
         # try:
             
         # except:
-        #     print("usage: tkutils.py englishngrams [test string]")
+        #     print("usage: tkutils.py englishNGrams [test string]")
     elif sys.argv[1] == "hamstring":
     	print(hamstring(sys.argv[2], sys.argv[3]))
         # try:

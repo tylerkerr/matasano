@@ -6,6 +6,6 @@ import tkutils
 filename = sys.argv[1]
 key = sys.argv[2]
 
-plaintext = tkutils.ingestb64asbinary(filename)
+plaintext = tkutils.ingestB64asBinary(filename)
 
 print(tkutils.encryptaesecb(plaintext, key))
