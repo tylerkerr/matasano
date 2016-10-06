@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
 import sys
+import os
 import binascii
+import random
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 
@@ -232,6 +234,86 @@ def encryptaescbc(plaintext, key, iv): # encrypt a base64 file with AES-128-CBC
 
     ciphertext = binascii.b2a_base64(b''.join(ctblocks)).decode('utf-8')
     return(ciphertext)
+
+def blackbox(plaintext):
+    prepend = os.urandom((random.randint(5,10))) # add 5 to 10 random bytes before
+    append = os.urandom((random.randint(5,10)))  # and after the plaintext (before encryption)
+    mode = random.randint(0,1) # randomly choose AES-128-ECB or AES-128-CBC
+    key = os.urandom(16)
+    iv = os.urandom(16) # might as well do this here to slightly nudge towards constant time
+    fudgedpt = prepend + plaintext + append 
+    if mode == 0:
+        # print("ecb")
+        ciphertext = binascii.b2a_base64(encryptaesecb(fudgedpt, key)).decode('utf-8')
+    elif mode == 1:
+        # print("cbc")
+        ciphertext = encryptaescbc(fudgedpt, key, iv)
+    return(ciphertext) # returns base64
+
+
+def detectecb(ciphertext): # takes base64
+    ctbytes = binascii.a2b_base64(ciphertext) # base64 to binary
+    offsets = [i for i in range(0, 16)] # since the plaintext was misaligned with garbage, we need to try multiple block alignments
+
+    ecbcts = []
+    for offset in offsets:
+        offsetbytes = ctbytes[offset:] # trim off the beginning $offset bytes of the ciphertext
+        ctblocks = blocksplit(offsetbytes, 16) # split on the newly aligned block lines
+        countdict = {} # this will hold each block and the number of times it occurs
+        repetitions = 0 # how many blocks have occurred more than once
+        for block in ctblocks:
+            if block in countdict:
+                countdict[block] = countdict[block] + 1 # if the block has already been seen, increment its value
+            else:
+                countdict[block] = 1 # otherwise add it and set it to 1
+        for key in countdict:
+            if countdict[key] > 1: # once the initial counting is done, check for block repetitions
+                repetitions += countdict[key]
+        if repetitions > 0:
+            ecbcts.append((offset, repetitions, ctblocks))
+
+    if len(ecbcts) < 1:
+        print("no repeated blocks found with any offset. suspect CBC mode")
+    else:
+        totalrepeats = 0
+        sortedresults = sorted(ecbcts, key=lambda x: x[1], reverse=True) # i guess we don't really need to sort
+        for result in sortedresults:
+            totalrepeats += result[1]
+        print("found %s repeated blocks across all offsets. suspect ECB mode" % totalrepeats)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
