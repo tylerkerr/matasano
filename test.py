@@ -3,7 +3,10 @@
 import sys
 import tkutils
 
-filename = sys.argv[1]
 
-with open(filename) as f:
-    print(tkutils.detectecb(f.read()))
+import os
+
+while True:
+    a = int.from_bytes(os.urandom(4), byteorder='little')
+    if a < 10:
+        print(a)
