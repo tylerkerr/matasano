@@ -40,7 +40,7 @@ else:
     sys.exit(1)
 
 allbytes = [bytes([i]) for i in range(256)] # a list of every possible byte for use in bruteforcing
-totalblocks = len(ciphertext) // blocksize # how many blocks are there to solve?
+totalblocks = (len(ciphertext) - len(plaintext)) // blocksize # how many blocks are there to solve?
 solvedblocks = []
 
 for block in range(totalblocks): # we'll operate on each block separately, cracking them a byte at a time by exploiting ECB block alignment via chosen-length plaintexts

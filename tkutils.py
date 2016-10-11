@@ -153,7 +153,7 @@ def decryptaesecb(ciphertext, key): # decrypt a base64 file that's been encrypte
     plaintext = b''.join(ptblocks)
     return(plaintext)
 
-def encryptaesecb(plaintext, key): # encrypt a base64 file with AES-128-ECB
+def encryptaesecb(plaintext, key): # encrypt base64 with AES-128-ECB
     blocksize = 16
     if type(key) == bytes:
         keybytes = key
