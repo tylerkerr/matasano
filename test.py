@@ -3,10 +3,13 @@
 import sys
 import tkutils
 
+samba = """This is just a little samba
+Built upon a single note
+Other notes are sure to follow
+But the root is still that note""".encode()
 
-import os
+key = "YELLOW SUBMARINE"
 
-while True:
-    a = int.from_bytes(os.urandom(4), byteorder='little')
-    if a < 10:
-        print(a)
+encrypt = tkutils.encryptaesecb(samba, key)
+
+print(tkutils.decryptaesecb(encrypt, key))

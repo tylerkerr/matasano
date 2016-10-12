@@ -136,7 +136,7 @@ def splithex(hexin): # turn a hex string into a list of bytes (ints)
     return(bytesout)
     
     
-def decryptaesecb(ciphertext, key): # decrypt a base64 file that's been encrypted with AES-12-ECB
+def decryptaesecb(ciphertext, key): # decrypt binary that's been encrypted with AES-128-ECB
     blocksize = 16
     if type(key) == bytes:
         keybytes = key
@@ -149,11 +149,11 @@ def decryptaesecb(ciphertext, key): # decrypt a base64 file that's been encrypte
     for block in ctblocks:
         ecbcipher = Cipher(algorithms.AES(keybytes), modes.ECB(), backend=backend)
         ecbdecrypt = ecbcipher.decryptor()
-        ptblocks.append(ecbdecrypt.update(ciphertext) + ecbdecrypt.finalize())
+        ptblocks.append(ecbdecrypt.update(block) + ecbdecrypt.finalize())
     plaintext = b''.join(ptblocks)
-    return(plaintext)
+    return(plaintext) # outputs binary
 
-def encryptaesecb(plaintext, key): # encrypt base64 with AES-128-ECB
+def encryptaesecb(plaintext, key): # encrypt binary with AES-128-ECB
     blocksize = 16
     if type(key) == bytes:
         keybytes = key
@@ -170,7 +170,7 @@ def encryptaesecb(plaintext, key): # encrypt base64 with AES-128-ECB
         ecbencrypt = ecbcipher.encryptor()
         ctblocks.append(ecbencrypt.update(block) + ecbencrypt.finalize())
     ciphertext = b''.join(ctblocks)
-    return(ciphertext)
+    return(ciphertext) # outputs binary
 
 def padpkcs7(plaintext, length): # apply PCKS#7 padding to a bytes object
     if len(plaintext) == length:
@@ -206,7 +206,7 @@ def decryptaescbc(ciphertext, key, iv): # decrypt a base64 file that's been encr
         ptblocks[blockindex] = bytes(x ^ y for x, y in zip(decrypt, xorblock))
     pt = [block.decode('utf-8') for block in ptblocks]
 
-    return("".join(pt))
+    return("".join(pt)) # return ascii
 
 def encryptaescbc(plaintext, key, iv): # encrypt a base64 file with AES-128-CBC
     blocksize = 16
