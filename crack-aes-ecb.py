@@ -7,6 +7,7 @@ import tkutils
 
 filename = sys.argv[1] # per the challenge, we should provide a plaintext that trips the ECB detector. i'd prefer synthetic plaintexts but ok. you can feed it nothing but one repeated char (in base64)
 leveltwelve = "Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkgaGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBqdXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUgYnkK"
+
 """ ^^ this is the base64 encoding of plain ascii that the oracle appends to our plaintexts. 
        it's plaintext but we're pretending that we don't know it, as if this were a 'black box'...or 'oracle' 
 
@@ -40,7 +41,7 @@ else:
     sys.exit(1)
 
 allbytes = [bytes([i]) for i in range(256)] # a list of every possible byte for use in bruteforcing
-totalblocks = (len(ciphertext) - len(plaintext)) // blocksize # how many blocks are there to solve?
+totalblocks = (len(ciphertext) - len(plaintext)) // blocksize + 1 # how many blocks are there to solve?
 solvedblocks = []
 
 for block in range(totalblocks): # we'll operate on each block separately, cracking them a byte at a time by exploiting ECB block alignment via chosen-length plaintexts

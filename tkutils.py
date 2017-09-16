@@ -4,6 +4,7 @@ import sys
 import os
 import binascii
 import random
+from array import array
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 
@@ -132,7 +133,7 @@ def splithex(hexin): # turn a hex string into a list of bytes (ints)
     bytesout = []
     for pos in range(int(len(hexin) / 2)): # slice up the input hex string into hex bytes
     	bytepos = (pos+1)*2-2 # gets 0, 2, 4, 6 etc.
-    	hexout.append(int(hexin[bytepos:bytepos+2], 16))
+    	bytesout.append(int(hexin[bytepos:bytepos+2], 16))
     return(bytesout)
     
     
@@ -178,6 +179,7 @@ def padpkcs7(plaintext, length): # apply PCKS#7 padding to a bytes object
     else:
         difference = length - len(plaintext)
         return(plaintext + bytes([difference]) * difference)
+
 
 def blocksplit(bytes, blocksize):
     blocks = [bytes[i:i+blocksize] for i in range(0, len(bytes), blocksize)]
@@ -273,17 +275,46 @@ def detectecb(ciphertext): # takes base64
             ecbcts.append((offset, repetitions, ctblocks))
 
     if len(ecbcts) < 1:
-        # print("no repeated blocks found with any offset. suspect CBC mode")
+        print("no repeated blocks found with any offset. suspect CBC mode")
         return False
     else:
         totalrepeats = 0
         sortedresults = sorted(ecbcts, key=lambda x: x[1], reverse=True) # i guess we don't really need to sort
         for result in sortedresults:
             totalrepeats += result[1]
-        # print("found %s repeated blocks across all offsets. suspect ECB mode" % totalrepeats)
+        print("found %s repeated blocks across all offsets. suspect ECB mode" % totalrepeats)
         return True
 
+def assemblectriv(nonce, counter): # takes two ints, returns 16 bytes binary IV for CTR mode
+    assert type(nonce) == int
+    nonce = nonce.to_bytes(8, byteorder='little')
+    assert type(counter) == int
+    counter = counter.to_bytes(8, byteorder='little')
+    iv = nonce + counter
+    return(iv)
 
+def aesctr(intext, key, nonce): # takes BINARY, outputs BINARY
+    blocksize = 16
+    counter = 0
+    if type(key) == bytes:
+        keybytes = key
+    else:
+        keybytes = key.encode()
+    inblocks = blocksplit(intext, blocksize)
+    outblocks = []
+    for block in inblocks:
+        iv = assemblectriv(nonce, counter)
+        blockarray = array('B', block)
+        ctrcipher = Cipher(algorithms.AES(keybytes), modes.ECB(), backend=default_backend())
+        ctrencrypt = ctrcipher.encryptor()
+        keystream = (ctrencrypt.update(iv) + ctrencrypt.finalize())
+        keystreamarray = array('B', keystream)
+        counter += 1
+        outblock = [block[i] ^ keystream[i] for i in range(len(block))]
+        outblocks.append(outblock)
+    outblocks = sum(outblocks, [])
+    outtext = b''.join([bytes([i]) for i in outblocks])
+    return(outtext)
 
 
 
@@ -490,7 +521,7 @@ if __name__ == "__main__": # turn this mess into argparse sometime
         # except:
         #     print("usage: tkutils.py englishNGrams [test string]")
     elif sys.argv[1] == "unigrams":
-    	print(englishunigrams(sys.argv[2]))
+    	print(englishUnigrams(sys.argv[2]))
         # try:
             
         # except:

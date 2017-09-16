@@ -14,7 +14,7 @@ ngrampenalty = -1       # same Q as above but during final (full plaintext) scor
 
 ### vvv initialization vvv ###
 
-ctbytes = tkutils.ingestb64asbytelist(sys.argv[1])
+ctbytes = tkutils.ingestB64asByteList(sys.argv[1])
 
 ### ^^^ initialization ^^^ ###
 
@@ -63,7 +63,7 @@ for keysize in keysizes: # for every keysize, try every single key for each posi
             checktext = [chr(byte ^ checkkey) for byte in transblocks[checkblock]] # save each byte as an ascii char for n-gram frequncy scoring
             solutions.append((format(checkkey, 'x'), "".join(checktext))) # store tuples of (key in hex, transblock in ascii)
 
-        scored = [(sol[0], sol[1], tkutils.englishunigrams(sol[1], penalty=unigrampenalty)) for sol in solutions] # take the (key, transblock) tuples and output (key, transblock, score) tuples
+        scored = [(sol[0], sol[1], tkutils.englishUnigrams(sol[1], penalty=unigrampenalty)) for sol in solutions] # take the (key, transblock) tuples and output (key, transblock, score) tuples
         scoredsort = sorted(scored, key=lambda x: x[2], reverse=True) # sort the above tuple by score (descending)
         key[checkblock] = int(scoredsort[0][0], 16) # set the corresponding key byte to the byte that just scored the highest
 
@@ -75,7 +75,7 @@ for keysize in keysizes: # for every keysize, try every single key for each posi
 
     result = "".join([chr(byte) for byte in ptbytes]) # convert the decrypted bytes into ascii
     ptkey = "".join([chr(byte) for byte in key]) # convert the key into ascii
-    results.append((keysize, ptkey, tkutils.englishNGrams(result, penalty=ngrampenalty)-keysize*10, result))
+    results.append((keysize, ptkey, tkutils.englishNGrams(result, penalty=ngrampenalty)-keysize*500, result))
 
 ### ^^^ cracking ^^^ ###
 
