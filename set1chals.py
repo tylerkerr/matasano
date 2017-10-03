@@ -27,14 +27,16 @@ def chal3():
 
 def chal4():
     ciphertexts = open('./data/4.txt', 'r').read().split('\n')
-    print(ciphertexts)
+    scoredpts = {}
     for ciphertext in ciphertexts:
         try:
             key, plaintext, score = bruteforceSingleXOR(ciphertext, './samples/books')
-            print(plaintext + " (key: " + chr(key) + ")")
+            # print(plaintext + " (key: " + chr(key) + ")")
+            scoredpts[key] = (score, plaintext)
         except:
             # print(ciphertext, 'failed')
             pass
+    print(max(scoredpts)) # test this!!
 
 def chal5():
     plaintext = "Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal"
@@ -45,10 +47,14 @@ def chal5():
     if result == answer:
         print('[+] challenge five successful')
 
+def chal6():
+    test1 = "this is a test"
+    test2 = "wokka wokka!!!"
+    print(hammingDistance(test1, test2))
 
 # chal1()
 # chal2()
 # chal3()
 # chal4()
-
-chal5()
+# chal5()
+chal6()

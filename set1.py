@@ -55,7 +55,7 @@ def bruteforceSingleXOR(ciphertext: str, corpusdir: str): # hex
             else:
                 score -= 1
         keyscores[trial] = score
-    sortedscores = [(c, keyscores[c]) for c in sorted(keyscores, key=keyscores.get, reverse=True)]
+        sortedscores = [(c, keyscores[c]) for c in sorted(keyscores, key=keyscores.get, reverse=True)]
     bestkey = sortedscores[0][0]
     score = sortedscores[0][1]
     try:
@@ -72,3 +72,23 @@ def encryptVigenere(plaintext: str, key: str):
     ciphertext = fixedXOR(hexlify(plaintext.encode()).decode(), hexlify(vigenerekey.encode()).decode())
     # print(hexlify(plaintext.encode()))
     return ciphertext
+
+def hammingDistance(a: str, b: str):
+    if len(a) != len(b):
+        raise ValueError("[!] can't check hamming distance, length mismatch")
+    distance = 0
+    for x, y in zip(a, b):
+        xbits, ybits = bin(ord(x))[2:], bin(ord(y))[2:]
+        while len(xbits) < 8:
+            xbits = '0' + xbits
+        while len(ybits) < 8:
+            ybits = '0' + ybits
+        for xb, yb in zip(xbits, ybits):
+            if xb != yb:
+                distance += 1
+    return distance
+
+
+
+
+
