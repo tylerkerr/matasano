@@ -112,7 +112,11 @@ def scoreKeysizes(ciphertext: bytes, maxkeysize: int):
             combodistance = hammingDistance(combo[0], combo[1])
             # print(combo, combodistance)
             distance += (combodistance / keysize) / blockstoscore
+<<<<<<< HEAD
         distance += keysize / (maxkeysize * 10) # penalize longer keysizes to avoid solving for doubled keys
+=======
+        distance += keysize / (maxkeysize * 3.1) # penalize longer keysizes to avoid solving for doubled keys
+>>>>>>> 4834ac495c723f7efbe3e18baa51c3c36e52d391
         keysizescores[keysize] = distance
     return min(keysizescores, key=keysizescores.get)
 
