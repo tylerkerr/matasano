@@ -17,12 +17,10 @@ def chal10():
     key = b'YEllOW SUBMARINE'
     ciphertext = encryptAESECB(padPKCS7(plaintext, 16), key)
     newpt = stripPKCS7(decryptAESECB(ciphertext, key), 16)
-    print(plaintext)
-    print(newpt)
-    print([bytes([x]) for x in range(16)])
     assert plaintext == newpt
+    pt = b64decode(open('./data/10.txt', 'rb').read())
+    print(pt)
+    print('[+] challenge ten successful')
 
-
-
-chal9()
+# chal9()
 chal10()
