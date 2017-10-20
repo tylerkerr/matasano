@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from set1 import decryptAESECB, splitToBlocks
+from set1 import decryptAESECB, splitToBlocks, fixedXOR
 from base64 import b64decode
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
@@ -11,7 +11,6 @@ def padPKCS7(plaintext: bytes, blocksize: int):
     else:
         difference = blocksize - (len(plaintext) % blocksize)
         return plaintext + bytes([difference]) * difference
-
 
 def padPlaintext(plaintext: bytes, blocksize: int):
     ptblocks = splitToBlocks(plaintext, blocksize)
@@ -44,5 +43,27 @@ def encryptAESECB(plaintext: bytes, key: bytes):
     ciphertext = b''.join(ctblocks)
     return ciphertext
 
-def decryptAESCBC(plaintext: bytes, key: bytes, iv: bytes):
-    ctblocks = splitToBlocks(plaintext)
+def encryptAESCBC(plaintext: bytes, key: bytes, iv: bytes):
+    ptblocks = splitToBlocks(plaintext, 16)
+    ctblocks = []
+    for blocknum in range(len(ptblocks)):
+        if blocknum == 0:
+            xor = iv
+        else:
+            xor = ctblocks[blocknum-1]
+        toencrypt = fixedXOR(ptblocks[blocknum], xor)
+        ctblocks.append(encryptAESECB(toencrypt, key))
+    return b''.join(ctblocks)
+
+
+def decryptAESCBC(ciphertext: bytes, key: bytes, iv: bytes):
+    ctblocks = splitToBlocks(ciphertext, 16)
+    ptblocks = []
+    for blocknum in range(len(ctblocks)):
+        if blocknum == 0:
+            xor = iv
+        else:
+            xor = ctblocks[blocknum-1]
+        toxor = decryptAESECB(ctblocks[blocknum], key)
+        ptblocks.append(fixedXOR(toxor, xor))
+    return b''.join(ptblocks)
