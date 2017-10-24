@@ -4,6 +4,7 @@ from set1 import decryptAESECB, splitToBlocks, fixedXOR
 from base64 import b64decode
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
+import os
 
 def padPKCS7(plaintext: bytes, blocksize: int):
     if len(plaintext) % blocksize == 0:
@@ -67,3 +68,12 @@ def decryptAESCBC(ciphertext: bytes, key: bytes, iv: bytes):
         toxor = decryptAESECB(ctblocks[blocknum], key)
         ptblocks.append(fixedXOR(toxor, xor))
     return b''.join(ptblocks)
+
+def coinflip():
+    check = os.urandom(1)
+    if int.from_bytes(check, 'big') > 127:
+        return True
+    else:
+        return False
+
+# def randomEncrypt(plaintext: bytes)
