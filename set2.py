@@ -5,6 +5,7 @@ from base64 import b64decode
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 import os
+from random import SystemRandom
 
 def padPKCS7(plaintext: bytes, blocksize: int):
     if len(plaintext) % blocksize == 0:
@@ -70,10 +71,36 @@ def decryptAESCBC(ciphertext: bytes, key: bytes, iv: bytes):
     return b''.join(ptblocks)
 
 def coinflip():
-    check = os.urandom(1)
-    if int.from_bytes(check, 'big') > 127:
+    if int.from_bytes(os.urandom(1), 'big') > 127:
         return True
     else:
         return False
 
-# def randomEncrypt(plaintext: bytes)
+def randomEncrypt(plaintext: bytes):
+    key = os.urandom(16)
+    useCBC = coinflip()
+    prebytes = os.urandom(SystemRandom().randint(5, 10))
+    postbytes = os.urandom(SystemRandom().randint(5, 10))
+    oraclept = padPKCS7(prebytes + plaintext + postbytes, 16)
+    if useCBC:
+        print('cbc')
+        iv = os.urandom(16)
+        return encryptAESCBC(oraclept, key, iv)
+    else:
+        print('ecb')
+        return encryptAESECB(oraclept, key)
+
+def detectECB(ciphertext: bytes, blocksize):
+    ctblocks = splitToBlocks(ciphertext, blocksize)
+    knownblocks = []
+    for block in ctblocks:
+        if block in knownblocks:
+            return True
+        else:
+            knownblocks.append(block)
+    return False
+
+def chal12Encrypt(plaintext: bytes, secret: bytes):
+    key = '5DbnGJsMDIVFX2LqTrVKqg==' # random but permanent
+
+

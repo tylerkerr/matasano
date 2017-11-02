@@ -48,7 +48,22 @@ def testCoinflip():
             if heads == tails:
                 print('wow! %s tries' % tries)
                 break
+
+def chal11():
+    print('[-] trying challenge eleven')
+    trialpt = open('./samples/weirdbooks/fotr1.txt', 'rb').read()
+    ciphertext = randomEncrypt(trialpt)
+    if detectECB(ciphertext, 16):
+        print('ECB!')
+    else:
+        print('not ECB!')
+    print('[+] challenge eleven successful')
+
+def chal12():
+    secret = b64decode('Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkgaGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBqdXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUgYnkK')
+    
+    
 # chal9()
 # chal10()
-testCoinflip()
 # chal11()
+chal12()
