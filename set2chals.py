@@ -60,10 +60,40 @@ def chal11():
     print('[+] challenge eleven successful')
 
 def chal12():
-    secret = b64decode('Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkgaGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBqdXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUgYnkK')
+    print('[-] trying challenge twelve')
+    blocksize = detectOracleBlocksize(chal12Encrypt)
+    print("[+] blocksize is", blocksize)
+    assert detectECB(chal12Encrypt(open('./samples/books/candide.txt', 'rb').read()), blocksize)
+    print("[+] successfully detected ECB")
+    totalblocks = len(chal12Encrypt(b'')) // blocksize
+    print("[+] secret is {} blocks long".format(totalblocks))
+
+    allbytes = [bytes([i]) for i in range(256)]
     
-    
-# chal9()
-# chal10()
-# chal11()
+    filler = ('a' * blocksize).encode()
+    solvedblocks = []
+    for block in range(totalblocks):
+        plaintext = b''
+        if block == 0:
+            testblock = filler
+        else:
+            testblock = solvedblocks[block-1]
+        for bytepos in range(blocksize):
+            test = testblock[bytepos+1:]
+            target = chal12Encrypt(test)[block*blocksize:block*blocksize+blocksize]
+            for byte in allbytes:
+                checkblock = test + plaintext + byte
+                if chal12Encrypt(checkblock)[0:blocksize] == target:
+                    plaintext += byte
+                    print(byte.decode(), end='')
+                    sys.stdout.flush()
+                    break
+        solvedblocks.append(plaintext)
+    print('[+] challenge twelve successful')
+
+
+
+chal9()
+chal10()
+chal11()
 chal12()

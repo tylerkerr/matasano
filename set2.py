@@ -5,6 +5,7 @@ from base64 import b64decode
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 import os
+import sys
 from random import SystemRandom
 
 def padPKCS7(plaintext: bytes, blocksize: int):
@@ -100,7 +101,26 @@ def detectECB(ciphertext: bytes, blocksize):
             knownblocks.append(block)
     return False
 
-def chal12Encrypt(plaintext: bytes, secret: bytes):
-    key = '5DbnGJsMDIVFX2LqTrVKqg==' # random but permanent
+def chal12Encrypt(plaintext: bytes):
+    secret = b64decode('Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkgaGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBqdXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUgYnkK')
+    key = b64decode('5DbnGJsMDIVFX2LqTrVKqg==') # random but permanent
+    oraclept = padPKCS7(plaintext + secret, 16)
+    return encryptAESECB(oraclept, key)
+
+def detectOracleBlocksize(oracle):
+    lengthtest = 'a'
+    baselength = len(oracle(lengthtest.encode()))
+    newlength = baselength
+    while newlength == baselength:
+        lengthtest += 'a'
+        newlength = len(oracle(lengthtest.encode()))
+    return newlength - baselength
+
+def parseCookie(cookie: str):
+    keys = cookie.split('&')
+    return keys
+
+
+
 
 
