@@ -65,35 +65,72 @@ def chal12():
     print("[+] blocksize is", blocksize)
     assert detectECB(chal12Encrypt(open('./samples/books/candide.txt', 'rb').read()), blocksize)
     print("[+] successfully detected ECB")
-    totalblocks = len(chal12Encrypt(b'')) // blocksize
-    print("[+] secret is {} blocks long".format(totalblocks))
-
-    allbytes = [bytes([i]) for i in range(256)]
-    
-    filler = ('a' * blocksize).encode()
-    solvedblocks = []
-    for block in range(totalblocks):
-        plaintext = b''
-        if block == 0:
-            testblock = filler
-        else:
-            testblock = solvedblocks[block-1]
-        for bytepos in range(blocksize):
-            test = testblock[bytepos+1:]
-            target = chal12Encrypt(test)[block*blocksize:block*blocksize+blocksize]
-            for byte in allbytes:
-                checkblock = test + plaintext + byte
-                if chal12Encrypt(checkblock)[0:blocksize] == target:
-                    plaintext += byte
-                    print(byte.decode(), end='')
-                    sys.stdout.flush()
-                    break
-        solvedblocks.append(plaintext)
+    decryptCBCOracleSuffix(chal12Encrypt, blocksize)
     print('[+] challenge twelve successful')
 
+def chal13():
+    print('[-] trying challenge thirteen')
+    '''
+    the below will work for a lang/app/function that keeps the first value of a parameter
+    which is not the case for our implementation.
+    the cookie looks like this:
+    email=fake@evil.net&uid=93&role=admin&uid=62&role=user
+    '''
+    # evilcookie = splitToBlocks(makeProfile('fake@evil.admin'), 16)
+    # nicecookie = splitToBlocks(makeProfile('fakefakefakefakefake@fake.net'), 16)
+    # admincookie = evilcookie[0] + nicecookie[2] + evilcookie[1] + evilcookie[2]
+    # print(parseCookie(parseProfile(admincookie)))
+
+    '''
+    the below will work for a lang/app/function that doesn't break on malformed parameters
+    which is not the case for our implementation.
+    the cookie looks like this:
+    email=me@tyler.bike&uid=48&role=admin&uid=60&rol
+    '''
+    # evilcookie = splitToBlocks(makeProfile('fake@evil.admin'), 16)
+    # nicecookie = splitToBlocks(makeProfile('me@tyler.bike'), 16)
+    # admincookie = nicecookie[0] + nicecookie[1] + evilcookie[1]
+    # print(parseCookie(parseProfile(admincookie)))
+
+    '''
+    the below will work for a lang/app/function that allows emails containing unprintables
+    the cookie looks like this:
+    email=me@tyler.bike&uid=35&role=admin
+    but we have to be able to submit this as an email:
+    fake@evil.admin\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b
+    '''
+    evilcookie = splitToBlocks(makeProfile('fake@evil.' + padPKCS7(b'admin', 16).decode()), 16)
+    nicecookie = splitToBlocks(makeProfile('me@tyler.bike'), 16)
+    admincookie = nicecookie[0] + nicecookie[1] + evilcookie[1]
+    adminobject = parseCookie(parseProfile(admincookie))
+    print(adminobject)
+    assert adminobject['role'] == 'admin'
+
+    '''
+    the below will work for a lang/app/function that doesn't break on unknown paramaters
+    the cookie looks like this:
+    email=me@tyler.bike&uid=67&role=admin&uid=64&rolole=user
+    '''
+    evilcookie = splitToBlocks(makeProfile('fake@evil.admin'), 16)
+    fillcookie = splitToBlocks(makeProfile('fakefake@garb.net'), 16)
+    nicecookie = splitToBlocks(makeProfile('me@tyler.bike'), 16)
+    admincookie = nicecookie[0] + nicecookie[1] + evilcookie[1] + fillcookie[2]
+    adminobject = parseCookie(parseProfile(admincookie))
+    print(adminobject)
+    assert adminobject['role'] == 'admin'
+    print('[+] challenge thirteen successful')
 
 
-chal9()
-chal10()
-chal11()
-chal12()
+def chal14():
+    prebytes = os.urandom(SystemRandom().randint(1, 64))
+    blocksize = detectOracleBlocksizeHard(chal14Encrypt, prebytes)
+    print("[+] blocksize is", blocksize)
+    assert detectECB(chal14Encrypt(open('./samples/books/candide.txt', 'rb').read(), prebytes), blocksize)
+    print("[+] successfully detected ECB")
+
+# chal9()
+# chal10()
+# chal11()
+# chal12()
+# chal13()
+chal14()

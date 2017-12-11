@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 
 from set1 import decryptAESECB, splitToBlocks, fixedXOR
-from base64 import b64decode
+from base64 import b64decode, b64encode
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 import os
 import sys
-from random import SystemRandom
+import re
+from random import SystemRandom, randint
 
 def padPKCS7(plaintext: bytes, blocksize: int):
     if len(plaintext) % blocksize == 0:
@@ -116,11 +117,71 @@ def detectOracleBlocksize(oracle):
         newlength = len(oracle(lengthtest.encode()))
     return newlength - baselength
 
+def decryptCBCOracleSuffix(oracle, blocksize):
+    totalblocks = len(oracle(b'')) // blocksize
+    print("[+] secret is {} blocks long".format(totalblocks))
+    allbytes = [bytes([i]) for i in range(256)]
+    
+    filler = ('a' * blocksize).encode()
+    solvedblocks = []
+    for block in range(totalblocks):
+        plaintext = b''
+        if block == 0:
+            testblock = filler
+        else:
+            testblock = solvedblocks[block-1]
+        for bytepos in range(blocksize):
+            test = testblock[bytepos+1:]
+            target = oracle(test)[block*blocksize:block*blocksize+blocksize]
+            for byte in allbytes:
+                checkblock = test + plaintext + byte
+                if oracle(checkblock)[0:blocksize] == target:
+                    plaintext += byte
+                    print(byte.decode(), end='')
+                    sys.stdout.flush()
+                    break
+        solvedblocks.append(plaintext)
+
 def parseCookie(cookie: str):
     keys = cookie.split('&')
-    return keys
+    dic = {}
+    for key in keys:
+        k, v = key.split('=')
+        dic[k] = v
+    return dic
 
+def makeCookie(email: str, uid: int, role: str):
+    return 'email={}&uid={}&role={}'.format(email, uid, role)
 
+def makeProfile(email: str):
+    email = re.sub('[&=]', '', email)
+    uid = SystemRandom().randint(10,99)
+    key = b64decode('Fb0cRwVG7zA7+cDK7GAQCQ==') # random but permanent
+    role = 'user'
+    cookie = makeCookie(email, uid, role)
+    return encryptAESECB(padPKCS7(cookie.encode(), 16), key)
 
+def parseProfile(cookie: bytes):
+    key = b64decode('Fb0cRwVG7zA7+cDK7GAQCQ==') # random but permanent
+    cookie = stripPKCS7(decryptAESECB(cookie, key), 16).decode()
+    return cookie
 
+def chal14Encrypt(plaintext: bytes, prebytes: bytes):
+    secret = b64decode('Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkgaGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBqdXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUgYnkK')
+    key = b64decode('gR/1a5kNvr2pTK3BOX/m7Q==') # random but permanent
+    
+    oraclept = padPKCS7(prebytes + plaintext + secret, 16)
+    return encryptAESECB(oraclept, key)
+
+def detectOracleBlocksizeHard(oracle, prebytes: bytes):
+    lengthtest = 'a'
+    baselength = len(oracle((lengthtest.encode()), prebytes))
+    newlength = baselength
+    while newlength == baselength:
+        lengthtest += 'a'
+        newlength = len(oracle((lengthtest.encode()), prebytes))
+    return newlength - baselength
+
+def decryptCBCOracleSuffixHard(oracle, prebytes: bytes, blocksize: int):
+    return True
 
