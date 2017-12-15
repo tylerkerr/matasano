@@ -171,29 +171,50 @@ def chal15():
 
 def chal16():
     '''
-    comment1=cooking %20MCs;userdata= flip9admin5true; comment2=%20like %20a%20pound%20o f%20bacon
-    0000000000000000 1111111111111111 2222222222222222 3333333333333333 4444444444444444 5555555555555555
+    comment1=cooking %20MCs;userdata= tyler3admin5true ;comment2=%20lik e%20a%20pound%20 of%20bacon
+    0000000000000000 1111111111111111 2222222222222222 3333333333333333 4444444444444444 5555555555555555 6666666666666666
     '''
     print('[-] trying challenge sixteen')
-    cookie = chal16Cookie('hey ;admin=true;dudes')
+    datatouse = 'tyler9admin5true'
+    print('[-] making a cookie with userdata "{}"'.format(datatouse))
+    cookie = chal16Cookie(datatouse)
     print(chal16Parse(cookie))
-    print(isAdmin(chal16Parse(cookie)))
-    print("[-] all bitflips for '=':")
-    allBitFlips('=')
-    print("[+] using 9 (flip bit 5)")
-    print("[-] all bitflips for ';':")
-    allBitFlips(';')
-    print("[+] using 3 (flip bit 4)")
-    flipBit(b'=', 5)
+    print('admin:', isAdmin(chal16Parse(cookie)))
+    # print("[-] all bitflips for '=':")
+    # allBitFlips('=')
+    # print("[+] using 9 to forge = (flip bit 5)")
+    # print("[-] all bitflips for ';':")
+    # allBitFlips(';')
+    # print("[+] using 9 to forge ; (flip bit 6)")
 
+    print('[-] flipping bit 6 of byte 5 and bit 4 of byte 11 of block 1')
+    print('[-] this will turn 9 into ; and 5 into =')
 
-# chal9()
-# chal10()
-# chal11()
-# chal12()
-# chal13()
-# chal14()
-# chal15()
+    cookieblocks = splitToBlocks(cookie[0], 16)
+
+    blocktoflip = cookieblocks[1]
+    flippedbytes = []
+    for byte in enumerate(blocktoflip):
+        if byte[0] == 11:
+            flippedbytes.append(flipBit(bytes([byte[1]]), 4))
+        elif byte[0] == 5:
+            flippedbytes.append(flipBit(bytes([byte[1]]), 6))
+        else:
+            flippedbytes.append(bytes([byte[1]]))
+
+    evilcookie = (b''.join(cookieblocks[:1] + flippedbytes + cookieblocks[2:]), cookie[1])
+    print(chal16Parse(evilcookie))
+    print('admin:', isAdmin(chal16Parse(evilcookie)))
+    # assert isAdmin(chal16Parse(evilcookie))
+    print('[+] challenge sixteen successful')
+
+chal9()
+chal10()
+chal11()
+chal12()
+chal13()
+chal14()
+chal15()
 chal16()
 
 

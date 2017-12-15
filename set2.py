@@ -260,7 +260,8 @@ def stripPKCS7(plaintext: bytes, blocksize: int):
 
 def chal16Cookie(userdata: str):
     key = b64decode('M3lWZiQ04Zqfy+KG9mHgvg==')
-    iv = os.urandom(16)
+    # iv = os.urandom(16)
+    iv = b64decode('Fb0cRwVG7zA7+cDK7GAQCQ==')
     prepend = 'comment1=cooking%20MCs;userdata='
     append = ';comment2=%20like%20a%20pound%20of%20bacon'
     userdata = re.sub(';', '%3B', userdata)
@@ -280,7 +281,7 @@ def isAdmin(dic: dict):
 def chal16Parse(cookie: tuple):
     key = b64decode('M3lWZiQ04Zqfy+KG9mHgvg==')
     iv = cookie[1]
-    plaintext = stripPKCS7(decryptAESCBC(cookie[0], key, iv), 16).decode()
+    plaintext = stripPKCS7(decryptAESCBC(cookie[0], key, iv), 16).decode("utf-8", 'replace')
     return parseCookie(plaintext)
 
 def char2bin(char: str):
