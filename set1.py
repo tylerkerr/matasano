@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 
-from base64 import b64encode, b64decode
 from binascii import hexlify, unhexlify
-from collections import OrderedDict
-from operator import itemgetter    
 from os import listdir
+from base64 import b64encode, b64decode
 from itertools import combinations
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
@@ -13,13 +11,16 @@ from cryptography.hazmat.backends import default_backend
 def hexToBytes(hexstring: str):
     return bytearray.fromhex(hexstring)
 
+
 def hexToString(hexstring: str):
     return unhexlify(hexstring).decode()
+
 
 def fixedXOR(a: bytes, b: bytes):
     if len(a) != len(b):
         raise ValueError("[!] can't XOR, length mismatch")
     return bytes([abyte ^ bbyte for abyte, bbyte in zip(a, b)])
+
 
 def buildCorpus(dir: str):
     chars = {}
@@ -39,11 +40,13 @@ def buildCorpus(dir: str):
         normchars[c] = chars[c] / charcount
     return(normchars)
 
+
 def singleXOR(bytesin: bytes, key: int):
     assert key < 256
     return [b ^ key for b in bytesin]
 
-def bruteforceSingleXOR(ciphertext: str, charscores: dict): # hex 
+
+def bruteforceSingleXOR(ciphertext: str, charscores: dict):  # hex
     trialdecrypts = {}
     for byte in range(256):
         trialdecrypts[byte] = bytearray(singleXOR(hexToBytes(ciphertext), byte))
@@ -66,6 +69,7 @@ def bruteforceSingleXOR(ciphertext: str, charscores: dict): # hex
         raise ValueError('[!] invalid byte in best decryption!')
     return (bestkey, plaintext, score)
 
+
 def encryptVigenere(plaintext: bytes, key: bytes):
     vigenerekey = bytearray(b'')
     while len(vigenerekey) < len(plaintext):
@@ -74,6 +78,7 @@ def encryptVigenere(plaintext: bytes, key: bytes):
     ciphertext = fixedXOR(plaintext, vigenerekey)
     return ciphertext
 
+
 def decryptVigenere(ciphertext: bytes, key: bytes):
     vigenerekey = bytearray(b'')
     while len(vigenerekey) < len(ciphertext):
@@ -81,6 +86,7 @@ def decryptVigenere(ciphertext: bytes, key: bytes):
     vigenerekey = vigenerekey[0:len(ciphertext)]
     plaintext = fixedXOR(ciphertext, vigenerekey)
     return plaintext
+
 
 def hammingDistance(a: bytes, b: bytes):
     if len(a) != len(b):
@@ -97,8 +103,10 @@ def hammingDistance(a: bytes, b: bytes):
                 distance += 1
     return distance
 
+
 def splitToBlocks(inbytes: bytes, blocksize: int):
     return [inbytes[i:i+blocksize] for i in range(0, len(inbytes), blocksize)]
+
 
 def scoreKeysizes(ciphertext: bytes, maxkeysize: int):
     blockstoscore = 10
@@ -112,9 +120,10 @@ def scoreKeysizes(ciphertext: bytes, maxkeysize: int):
             combodistance = hammingDistance(combo[0], combo[1])
             # print(combo, combodistance)
             distance += (combodistance / keysize) / blockstoscore
-        distance += keysize / (maxkeysize * 10) # penalize longer keysizes to avoid solving for doubled keys
+        distance += keysize / (maxkeysize * 10)  # penalize longer keysizes to avoid solving for doubled keys
         keysizescores[keysize] = distance
     return min(keysizescores, key=keysizescores.get)
+
 
 def transposeToKeyBlocks(ciphertext: bytes, keysize: int):
     keyblocks = []
@@ -129,7 +138,8 @@ def transposeToKeyBlocks(ciphertext: bytes, keysize: int):
         keyblockbytes.append(bytes(keyblock))
     return keyblockbytes
 
-def bruteforceVigenere(ciphertext: bytes, keysize:int):
+
+def bruteforceVigenere(ciphertext: bytes, keysize: int):
     charscores = buildCorpus('./samples/books/')
     keyblocks = (transposeToKeyBlocks(ciphertext, keysize))
     key = bytearray(b'')
@@ -137,6 +147,7 @@ def bruteforceVigenere(ciphertext: bytes, keysize:int):
         key += bytes([bruteforceSingleXOR(hexlify(keyblock).decode(), charscores)[0]])
     key = bytes(key)
     return key
+
 
 def decryptAESECB(ciphertext: bytes, key: bytes):
     blocksize = 16
@@ -149,6 +160,7 @@ def decryptAESECB(ciphertext: bytes, key: bytes):
         ptblocks.append(ecbdecrypt.update(block))
     plaintext = b''.join(ptblocks)
     return plaintext
+
 
 def detectECB(ciphertext: bytes, blocksize: int):
     ctblocks = splitToBlocks(ciphertext, blocksize)

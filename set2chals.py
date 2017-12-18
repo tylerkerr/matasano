@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from set2 import *
-from binascii import hexlify, unhexlify
+
 
 def chal9():
     print('[-] trying challenge nine')
@@ -10,7 +10,7 @@ def chal9():
     result = padPKCS7(example, 20)
     print(result)
 
-    plaintext =b"hey..hope this comes out the other side all right..."
+    plaintext = b"hey..hope this comes out the other side all right..."
     key = b'YEllOW SUBMARINE'
     ciphertext = encryptAESECB(padPKCS7(plaintext, 16), key)
     newpt = stripPKCS7(decryptAESECB(ciphertext, key), 16)
@@ -19,6 +19,7 @@ def chal9():
     if result == answer:
         print('[+] challenge nine successful')
 
+
 def chal10():
     print('[-] trying challenge ten')
 
@@ -26,11 +27,13 @@ def chal10():
     key = b'YELLOW SUBMARINE'
     testpt = b'block of sixteen0'
     testct = encryptAESCBC(padPKCS7(testpt, 16), key, iv)
-    
+    assert stripPKCS7(decryptAESCBC(testct, key, iv), 16) == testpt
+
     ct = b64decode(open('./data/10.txt', 'rb').read())
     pt = decryptAESCBC(ct, key, iv)
     print(pt.decode())
     print('[+] challenge ten successful')
+
 
 def testCoinflip():
     while True:
@@ -49,6 +52,7 @@ def testCoinflip():
                 print('wow! %s tries' % tries)
                 break
 
+
 def chal11():
     print('[-] trying challenge eleven')
     trialpt = open('./samples/weirdbooks/fotr1.txt', 'rb').read()
@@ -59,6 +63,7 @@ def chal11():
         print('not ECB!')
     print('[+] challenge eleven successful')
 
+
 def chal12():
     print('[-] trying challenge twelve')
     blocksize = detectOracleBlocksize(chal12Encrypt)
@@ -67,6 +72,7 @@ def chal12():
     print("[+] successfully detected ECB")
     decryptCBCOracleSuffix(chal12Encrypt, blocksize)
     print('[+] challenge twelve successful')
+
 
 def chal13():
     print('[-] trying challenge thirteen')
@@ -169,6 +175,7 @@ def chal15():
     print('[+] all tests passed')
     print('[+] challenge fifteen successful')
 
+
 def chal16():
     '''
     comment1=cooking %20MCs;userdata= tyler3admin5true ;comment2=%20lik e%20a%20pound%20 of%20bacon
@@ -208,6 +215,7 @@ def chal16():
     # assert isAdmin(chal16Parse(evilcookie))
     print('[+] challenge sixteen successful')
 
+
 chal9()
 chal10()
 chal11()
@@ -216,7 +224,3 @@ chal13()
 chal14()
 chal15()
 chal16()
-
-
-
-
