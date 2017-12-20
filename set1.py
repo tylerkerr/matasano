@@ -56,7 +56,7 @@ def bruteforceSingleXOR(ciphertext: str, charscores: dict):  # hex
         for c in trialdecrypts[trial]:
             char = chr(c)
             if char in charscores:
-                score += charscores[char]
+                score += charscores[char] * 10
             else:
                 score -= 1
         keyscores[trial] = score
@@ -132,7 +132,6 @@ def transposeToKeyBlocks(ciphertext: bytes, keysize: int):
     for c in range(len(ciphertext)):
         block = c % keysize
         keyblocks[block] += bytes([ciphertext[c]])
-        # print(ciphertext[c])
     keyblockbytes = []
     for keyblock in keyblocks:
         keyblockbytes.append(bytes(keyblock))

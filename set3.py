@@ -126,3 +126,11 @@ def bruteforceSingleXORBytes(ciphertext: str, charscores: dict):  # hex
     score = sortedscores[0][1]
     plaintext = trialdecrypts[bestkey]
     return bestkey, plaintext
+
+
+def chal20Encrypt():
+    pts = [b64decode(line) for line in open('./data/20.txt', 'r').read().splitlines()]
+    key = b'uYTesOYLHdvqveJmGIcBgQ=='
+    nonce = bytes(8)
+    cts = [AESCTR(pt, key, nonce) for pt in pts]
+    return cts

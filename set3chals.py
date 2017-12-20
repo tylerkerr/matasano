@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from set3 import *
-from set1 import buildCorpus
+from set1 import buildCorpus, bruteforceVigenere
 
 def chal17():
     print('[-] trying challenge seventeen')
@@ -53,6 +53,21 @@ def chal19():
     print('[+] challenge nineteen successful')
 
 
+def chal20():
+    print('[-] trying challenge twenty')
+    cts = chal20Encrypt()
+    maxlen = getMaxLen(cts)
+    minlen = getMinLen(cts)
+    print(len(cts), 'ciphertexts. maxlen', maxlen, 'minlen', minlen)
+    truncatedcts = [ct[0:minlen] for ct in cts]
+    ciphertext = b''.join(truncatedcts)
+    keystream = bruteforceVigenere(ciphertext, minlen)
+    for ct in truncatedcts:
+        print(fixedXOR(ct, keystream).decode())
+    print('[+] challenge twenty successful')
+
+
 chal17()
 chal18()
 chal19()
+chal20()
