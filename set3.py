@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 
-from set1 import splitToBlocks, fixedXOR, singleXOR
+from set1 import splitToBlocks, fixedXOR, singleXOR, transposeToKeyBlocks
 from set2 import padPKCS7, stripPKCS7, encryptAESCBC, decryptAESCBC, encryptAESECB
 import os
 import sys
 import re
 from base64 import b64decode
 from secrets import choice
+from time import time, sleep
+from random import SystemRandom
 
 
 def chal17Encrypt():
@@ -134,3 +136,138 @@ def chal20Encrypt():
     nonce = bytes(8)
     cts = [AESCTR(pt, key, nonce) for pt in pts]
     return cts
+
+
+
+def getnGrams(string: str, n: int):
+    ngrams = []
+    for i in range(len(string)-1):
+        if len(string[i:i+n]) == n:
+            ngrams.append(string[i:i+n])
+    return ngrams
+
+def buildnGramCorpus(dir: str, maxn: int):
+    ngramcounts = {}
+    charcount = 0
+    for file in os.listdir(dir):
+        filename = dir + '/' + file
+        with open(filename, 'r') as f:
+            text = f.read()
+            charcount += len(text)
+            for n in range(1, maxn+1):
+                counts = {}
+                ngrams = getnGrams(text, n)
+                for gram in ngrams:
+                    if gram in counts:
+                        counts[gram] += 1
+                    else:
+                        counts[gram] = 1
+                ngramcounts[n] = counts
+
+    ngramscores = {}
+    for nsize in range(1, maxn+1):
+        ngramscores[nsize] = {}
+        for g in ngramcounts[nsize]:
+            ngramscores[nsize][g] = ngramcounts[nsize][g] / (charcount // nsize)
+
+    return(ngramscores)
+
+
+def bruteforceRepeatingXOR(ciphertext: bytes, keysize: int, maxn: int):
+    gramscores = buildnGramCorpus('./samples/books/', maxn)
+    keyblocks = (transposeToKeyBlocks(ciphertext, keysize))
+    key = bytearray(b'')
+    for keyblock in keyblocks:
+        key += bytes([bruteforceSingleXORnGrams(keyblock, gramscores, maxn)[0]])
+    key = bytes(key)
+    return key
+
+
+def bruteforceSingleXORnGrams(ciphertext: bytes, gramscores: dict, maxn: int):  # hex
+    trialdecrypts = {}
+    for byte in range(256):
+        trialdecrypts[byte] = bytes(singleXOR(ciphertext, byte))
+    keyscores = {}
+    for trial in trialdecrypts:
+        score = 0
+        for n in range(1, maxn + 1):
+            ngrams = getnGrams(trialdecrypts[trial], n)
+            for c in ngrams:
+                gram = c.decode('utf-8', 'ignore')
+                if gram in gramscores[n]:
+                    # print('found ngram "{}" in {}-gram scores. score += {}'.format(gram, n, gramscores[n][gram] * n * n))
+                    score += gramscores[n][gram] * n ** 2
+                else:
+                    score -= 1
+        keyscores[trial] = score
+        sortedscores = [(c, keyscores[c]) for c in sorted(keyscores, key=keyscores.get, reverse=True)]
+    bestkey = sortedscores[0][0]
+    score = sortedscores[0][1]
+    try:
+        plaintext = trialdecrypts[bestkey].decode()
+    except:
+        raise ValueError('[!] invalid byte in best decryption!')
+    return (bestkey, plaintext, score)
+
+def getLowest32Bits(x: int):
+    return int(0xffffffff & x)
+
+class MT19937:
+    w = 32  # word size in bits
+    n = 624  # degree of recurrence
+    m = 397  # 'middle word' offset
+    r = 31  # 'separation point' of one word
+    a = 0x9908b0df  # coefficient of the rational normal form twist matrix (?)
+    b = 0x9d2c5680  # tempering bitmask
+    c = 0xefc60000  # tempering bitmask
+    d = 0xffffffff  # tempering bitmask
+    l = 18  # tempering bitshift
+    s = 7   # tempering bitshift
+    t = 15  # tempering bitshift
+    u = 11  # tempering bitshift
+    f = 1812433253  # magic?
+
+    lm = (1 << r) - 1  # lower mask
+    um = getLowest32Bits(abs(~lm))  # upper mask
+
+    def __init__(self, seed):
+        self.index = self.n
+        self.state = [0] * self.n
+        self.state[0] = seed
+        for i in range(1, self.n):
+            stateinit = self.f * (self.state[i - 1] ^ self.state[i - 1] >> (self.w - 2)) + i
+            self.state[i] = getLowest32Bits(stateinit)
+
+    def extract(self):
+        if self.index >= self.n:
+            if self.index > self.n:
+                print("[!] generator was not seeded!")
+                sys.exit(1)
+            self.twist()
+        y = self.state[self.index]
+        y = y ^ ((y >> self.u) & self.d)
+        y = y ^ ((y << self.s) & self.b)
+        y = y ^ ((y << self.t) & self.c)
+        y = y ^ (y >> self.l)
+        self.index += 1
+        return getLowest32Bits(y)
+
+    def twist(self):
+        for i in range(self.n):
+            x = (self.state[i] & self.um) + (self.state[(i + 1) % self.n] & self.lm)
+            xA = x >> 1
+            if x % 2 != 0:
+                xA = xA ^ self.a
+
+            self.state[i] = self.state[(i + self.m) % self.n] ^ xA
+
+        self.index = 0
+
+
+def chal22Rand():
+    sleep(SystemRandom().randint(1, 7))
+    epoch = int(time())
+    mt = MT19937(epoch)
+    output = mt.extract()
+    sleep(SystemRandom().randint(1, 7))
+    return output

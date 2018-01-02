@@ -172,3 +172,4 @@ def detectECB(ciphertext: bytes, blocksize: int):
         return True
     else:
         return False
+

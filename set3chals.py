@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from set3 import *
-from set1 import buildCorpus, bruteforceVigenere
+from set1 import buildCorpus
 
 def chal17():
     print('[-] trying challenge seventeen')
@@ -61,13 +61,50 @@ def chal20():
     print(len(cts), 'ciphertexts. maxlen', maxlen, 'minlen', minlen)
     truncatedcts = [ct[0:minlen] for ct in cts]
     ciphertext = b''.join(truncatedcts)
-    keystream = bruteforceVigenere(ciphertext, minlen)
+    keystream = bruteforceRepeatingXOR(ciphertext, minlen, 3)
     for ct in truncatedcts:
         print(fixedXOR(ct, keystream).decode())
     print('[+] challenge twenty successful')
 
 
-chal17()
-chal18()
-chal19()
-chal20()
+def chal21():
+    print('[-] trying challenge twenty-one')
+    testseed = 1131464071
+    mt = MT19937(testseed)
+    print('[-] initialized mersenne twister with seed {}'.format(testseed))
+    testvectors = [3521569528,  # https://gist.github.com/mimoo/8e5d80a2e236b8b6f5ed
+                   1101990581,
+                   1076301704,
+                   2948418163,
+                   3792022443,
+                   2697495705,
+                   2002445460,
+                   502890592]
+
+    for n, v in enumerate(testvectors):
+        assert mt.extract() == v
+        print("[+] match on test vector {} : {}".format(n, v))
+
+    print('[+] challenge twenty-one successful')
+
+def chal22():
+    pass
+
+def chal23():
+    pass    
+
+def chal24():
+    pass
+
+# chal17()
+# chal18()
+# chal19()
+# chal20()
+# chal21()
+chal22()
+chal23()
+chal24()
+
+
+
+
